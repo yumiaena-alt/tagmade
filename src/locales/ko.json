@@ -185,28 +185,5 @@
   "SignUp": {
     "meta_title": "회원가입",
     "meta_description": "몇 초면 계정을 만들고 팀과 라벨 작업을 공유할 수 있습니다."
-  },
-  "DashboardLayout": {
-    "meta_title": "Smart Label Generator 대시보드",
-    "meta_description": "브랜드의 라벨 작업과 팀 설정을 한곳에서 관리하세요.",
-    "home": "홈",
-    "members": "멤버",
-    "settings": "설정"
-  },
-  "DashboardIndexPage": {
-    "title_bar": "대시보드",
-    "title_bar_description": "대시보드에 오신 것을 환영합니다",
-    "message_state_title": "시작해 볼까요",
-    "message_state_description": "<code>dashboard/page.tsx</code> 파일을 수정해 이 페이지를 원하는 대로 바꿀 수 있습니다.",
-    "message_state_alternative": "더 많은 기능이 필요하신가요? Next.js 16 & React 19, 멀티테넌시 & 팀, 역할 & 권한, Shadcn UI,\noRPC 기반 엔드투엔드 타입 안정성, Stripe 결제, 라이트/다크 모드. <url></url>을 확인해 보세요.",
-    "max_message": "또는 자체 호스팅 인증 스택(Better Auth)이 필요하신가요? <url></url>을 확인해 보세요."
-  },
-  "UserProfilePage": {
-    "title_bar": "내 프로필",
-    "title_bar_description": "프로필 정보를 확인하고 관리하세요"
-  },
-  "OrganizationProfilePage": {
-    "title_bar": "조직 관리",
-    "title_bar_description": "조직 설정을 관리하세요"
   }
 }

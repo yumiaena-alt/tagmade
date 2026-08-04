@@ -4,14 +4,11 @@ Live: <https://260804tag.vercel.app>
 
 ## Build command
 
-`vercel.json` overrides the build with plain `next build`.
+Plain `next build` (the `build` script). Nothing to override in `vercel.json`.
 
-The package script `npm run build` is `db:migrate && next build`, which needs a
-reachable Postgres. Locally that is the bundled PGlite server; on Vercel there is
-none, so the migration step would fail the build. The studio and the marketing
-pages never query the database, so skipping migrations costs nothing. If the
-dashboard routes are ever needed in production, provision Postgres and run
-`npm run db:migrate` as a separate step rather than putting it back in the build.
+Earlier this project carried a Drizzle/PGlite database layer and the build ran
+migrations first, which cannot work on Vercel. The database was never queried by
+any page, so it was removed along with the dashboard and organization screens.
 
 ## Environment variables
 
@@ -23,19 +20,15 @@ Set on the Vercel project (Settings → Environment Variables):
 | `NEXT_PUBLIC_APP_URL` | Canonical, `hreflang` and sitemap URLs | Set to the production domain |
 | `NEXT_PUBLIC_SENTRY_DISABLED` | Without a DSN and auth token Sentry only adds build noise and a failed source-map upload | `true` |
 
-`.env` is committed and supplies `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` plus a
-localhost `DATABASE_URL`, which is enough to satisfy env validation. Real secrets
-belong in `.env.local` (git-ignored) or in Vercel, never in `.env`.
+`.env` is committed and supplies `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. Real
+secrets belong in `.env.local` (git-ignored) or in Vercel, never in `.env`.
 
-### Two things are not production-ready
+### One thing is not production-ready
 
-1. **Auth.** `CLERK_SECRET_KEY` is a placeholder and the committed publishable
-   key belongs to the upstream boilerplate's shared demo instance, not to this
-   project. `/sign-in`, `/sign-up` and `/dashboard` will not work correctly.
-   Create a Clerk application and set both keys to fix it. The label studio
-   itself needs no account, so it is unaffected.
-2. **Database.** There is none, so `/dashboard` fails at runtime. Attach Postgres
-   and set `DATABASE_URL`, or remove the dashboard routes.
+**Auth.** `CLERK_SECRET_KEY` is a placeholder and the committed publishable key
+belongs to the upstream boilerplate's shared demo instance, not to this project,
+so `/sign-in` and `/sign-up` will not work correctly. Create a Clerk application
+and set both keys to fix it. The label studio needs no account and is unaffected.
 
 ## Base URL resolution
 
