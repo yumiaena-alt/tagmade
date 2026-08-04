@@ -1,0 +1,212 @@
+{
+  "Index": {
+    "meta_title": "의류 라벨·세탁기호·SKU 바코드 무료 생성기 | Smart Label Generator",
+    "meta_description": "혼용률만 붙여넣으면 KS K 0021 세탁 기호와 Code 128 SKU 바코드가 자동 생성됩니다. 회원가입 없이 바로 사용하고 30×70mm 인쇄용 벡터 PDF로 내려받으세요."
+  },
+  "Navbar": {
+    "sign_in": "로그인",
+    "sign_up": "회원가입",
+    "product": "라벨 생성기",
+    "pricing": "요금제",
+    "docs": "사용 가이드",
+    "blog": "블로그",
+    "about": "소개"
+  },
+  "LocaleSwitcher": {
+    "button_label": "언어 변경"
+  },
+  "Hero": {
+    "follow_twitter": "@Ixartz 트위터 팔로우",
+    "title": "공장 발주용 <important>케어 라벨</important>, 이제 1초면 끝납니다.",
+    "description": "소재 표기를 그대로 붙여넣으면 법적 표준 소재명으로 변환하고, 세탁 기호와 주의사항까지 자동으로 매칭합니다. AI 토큰 비용 없이 정규표현식과 룰 엔진으로만 동작합니다.",
+    "primary_button": "Next.js SaaS 스타터 킷 받기",
+    "secondary_button": "GitHub에서 스타"
+  },
+  "Features": {
+    "section_subtitle": "핵심 기능",
+    "section_title": "라벨 실무에 필요한 것만 담았습니다",
+    "section_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다.",
+    "feature1_title": "혼용률 자동 파싱",
+    "feature2_title": "KS K 0021 룰 엔진",
+    "feature3_title": "Code 128 바코드",
+    "feature4_title": "실시간 캔버스 편집",
+    "feature5_title": "인쇄용 벡터 PDF",
+    "feature6_title": "비회원 자동 보관",
+    "feature_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다."
+  },
+  "Pricing": {
+    "section_subtitle": "요금제",
+    "section_title": "지금은 전부 무료로 쓰실 수 있습니다",
+    "section_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다.",
+    "button_text": "시작하기"
+  },
+  "PricingPlans": {
+    "free_plan_name": "무료",
+    "premium_plan_name": "프리미엄",
+    "enterprise_plan_name": "엔터프라이즈"
+  },
+  "PricingCard": {
+    "free_plan_description": "개인 셀러용",
+    "premium_plan_description": "소규모 팀용",
+    "enterprise_plan_description": "대형 브랜드용",
+    "plan_price": "${price}",
+    "plan_interval_month": "/ 월",
+    "plan_interval_year": "/ 년"
+  },
+  "PricingFeatures": {
+    "feature_team_member": "팀원 최대 {number}명",
+    "feature_website": "웹사이트 최대 {number}개",
+    "feature_storage": "저장 공간 {number}GB",
+    "feature_transfer": "트래픽 {number}TB",
+    "feature_email_support": "이메일 지원"
+  },
+  "SponsorLogos": {
+    "sponsored_by": "후원",
+    "clerk_logo": "Clerk 로고",
+    "sentry_logo": "Sentry 로고",
+    "crowdin_logo": "Crowdin 로고",
+    "arcjet_logo": "Arcjet 로고",
+    "coderabbit_logo": "CodeRabbit 로고",
+    "nextjs_boilerplate_logo": "Next.js SaaS Boilerplate 로고"
+  },
+  "FAQ": {
+    "question": "생성된 세탁 기호를 그대로 인쇄해도 되나요?",
+    "answer": "매칭 로직은 KS K 0021 우선순위 규칙을 따르지만, 현재 아이콘은 알아보기 쉬운 근사 도형입니다. 법적 의미는 아이콘 옆에 인쇄되는 한글 문구가 담고 있습니다. 실제 발주용 라벨을 인쇄하기 전에는 정품 KS 심볼 세트로 교체하고, 최종 표기는 담당자가 확인해 주세요."
+  },
+  "CTA": {
+    "title": "지금 바로 만들어 보세요",
+    "description": "회원가입도, 결제도 필요 없습니다. 혼용률만 붙여넣으면 됩니다.",
+    "button_text": "Next.js SaaS 스타터 킷 받기"
+  },
+  "Footer": {
+    "product": "라벨 생성기",
+    "docs": "사용 가이드",
+    "blog": "블로그",
+    "community": "커뮤니티",
+    "company": "회사",
+    "terms_of_service": "이용약관",
+    "privacy_policy": "개인정보 처리방침",
+    "footer_text": "© {year} {name}. Made with <author></author>."
+  },
+  "TemplatePicker": {
+    "mode_care_label_name": "의류 케어라벨",
+    "mode_hang_tag_name": "브랜드 종이 행택",
+    "mode_import_label_name": "수입품 한글표시사항",
+    "mode_kc_mark_name": "KC 인증 마크",
+    "mode_logistics_seal_name": "물류·바코드 씰",
+    "mode_custom_name": "직접 제작"
+  },
+  "Studio": {
+    "page_heading": "템플릿을 고르고 캔버스에서 바로 편집하세요",
+    "page_lede": "의류 케어라벨·행택·수입 표시사항·KC 마크·물류 씰 템플릿을 규격째로 불러오고, 텍스트는 더블클릭해 바로 고칩니다. 빈 캔버스에서 직접 만들 수도 있습니다.",
+    "tab_templates": "템플릿",
+    "tab_elements": "요소",
+    "templates_heading": "템플릿 선택",
+    "elements_heading": "레이어",
+    "add_heading": "요소 추가",
+    "add_text": "텍스트",
+    "add_rect": "도형",
+    "add_divider": "구분선",
+    "add_barcode": "바코드",
+    "add_careSymbols": "세탁 기호",
+    "add_qr": "QR코드",
+    "page_size": "캔버스 크기 (mm)",
+    "delete_element": "선택 요소 삭제",
+    "no_selection": "캔버스에서 요소를 클릭하면 여기에 속성이 나타납니다.",
+    "canvas_hint": "클릭해 선택 · 드래그로 이동 · 핸들로 크기 조절 · 텍스트는 더블클릭해 바로 수정",
+    "font_size": "글자 크기",
+    "bold": "굵게",
+    "align": "정렬",
+    "tpl_care_standard": "표준 세로형",
+    "tpl_care_wide": "가로 접지형",
+    "tpl_hang_classic": "클래식",
+    "tpl_hang_minimal": "미니멀",
+    "tpl_import_full": "전체 항목",
+    "tpl_import_compact": "컴팩트",
+    "tpl_kc_micro": "초소형 가로",
+    "tpl_kc_stacked": "세로 적층",
+    "tpl_logistics_polybag": "폴리백",
+    "tpl_logistics_carton": "카톤 박스",
+    "tpl_custom_blank": "빈 캔버스",
+    "pdf_download": "인쇄용 PDF 다운로드",
+    "pdf_building": "PDF 생성 중…",
+    "pdf_hint": "{width} × {height}mm 실제 크기 · 텍스트와 바코드가 벡터로 저장되어 확대해도 깨지지 않습니다.",
+    "pdf_error": "PDF 생성에 실패했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.",
+    "add_image": "이미지",
+    "upload_image": "파일 선택",
+    "image_hint": "PNG·JPG·SVG를 올리면 문서에 함께 저장됩니다. KC 정품 로고나 브랜드 로고를 넣으세요.",
+    "image_too_large": "파일이 너무 큽니다. 1MB 이하로 올려주세요."
+  },
+  "Editor": {
+    "loading": "에디터를 불러오는 중입니다",
+    "field_brand": "브랜드",
+    "field_product_name": "제품명",
+    "field_price": "판매가",
+    "field_qr_url": "QR 링크",
+    "field_exchange_policy": "교환·환불 안내",
+    "field_importer": "수입자 (상호·주소)",
+    "field_manufacturer": "제조사",
+    "field_country_of_origin": "제조국",
+    "field_material": "소재",
+    "field_size": "치수",
+    "field_manufactured_on": "제조연월",
+    "field_caution": "취급 시 주의사항",
+    "field_certification_number": "인증번호",
+    "field_sku": "SKU",
+    "field_quantity": "수량",
+    "field_box_number": "박스 번호",
+    "field_composition": "혼용률",
+    "field_care_symbols": "세탁 기호",
+    "field_text": "텍스트",
+    "field_shape": "도형",
+    "field_divider": "구분선",
+    "field_punch_hole": "타공",
+    "field_barcode": "바코드",
+    "field_qr": "QR코드",
+    "field_image": "이미지"
+  },
+  "LabelStudio": {
+    "summary_heading": "표준화 결과",
+    "summary_total": "합계 {total}%",
+    "summary_total_incomplete": "합계 {total}% · 100%가 아닙니다",
+    "summary_empty": "혼용률을 입력하면 법적 표준 소재명으로 자동 변환됩니다.",
+    "symbols_heading": "세탁 기호",
+    "symbols_printed_note": "라벨에 인쇄되는 한글 표기입니다.",
+    "warnings_heading": "주의사항",
+    "tier_animal": "1순위 · 동물성",
+    "tier_regenerated": "2순위 · 재생·식물성",
+    "tier_synthetic": "3순위 · 합성",
+    "tier_basic": "4순위 · 기본"
+  },
+  "SignIn": {
+    "meta_title": "로그인",
+    "meta_description": "간편한 로그인으로 저장된 라벨 작업을 이어서 진행하세요."
+  },
+  "SignUp": {
+    "meta_title": "회원가입",
+    "meta_description": "몇 초면 계정을 만들고 팀과 라벨 작업을 공유할 수 있습니다."
+  },
+  "DashboardLayout": {
+    "meta_title": "Smart Label Generator 대시보드",
+    "meta_description": "브랜드의 라벨 작업과 팀 설정을 한곳에서 관리하세요.",
+    "home": "홈",
+    "members": "멤버",
+    "settings": "설정"
+  },
+  "DashboardIndexPage": {
+    "title_bar": "대시보드",
+    "title_bar_description": "대시보드에 오신 것을 환영합니다",
+    "message_state_title": "시작해 볼까요",
+    "message_state_description": "<code>dashboard/page.tsx</code> 파일을 수정해 이 페이지를 원하는 대로 바꿀 수 있습니다.",
+    "message_state_alternative": "더 많은 기능이 필요하신가요? Next.js 16 & React 19, 멀티테넌시 & 팀, 역할 & 권한, Shadcn UI,\noRPC 기반 엔드투엔드 타입 안정성, Stripe 결제, 라이트/다크 모드. <url></url>을 확인해 보세요.",
+    "max_message": "또는 자체 호스팅 인증 스택(Better Auth)이 필요하신가요? <url></url>을 확인해 보세요."
+  },
+  "UserProfilePage": {
+    "title_bar": "내 프로필",
+    "title_bar_description": "프로필 정보를 확인하고 관리하세요"
+  },
+  "OrganizationProfilePage": {
+    "title_bar": "조직 관리",
+    "title_bar_description": "조직 설정을 관리하세요"
+  }
+}
