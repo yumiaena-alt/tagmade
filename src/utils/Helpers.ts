@@ -17,10 +17,14 @@ export const getBaseUrl = () => {
     return Env.NEXT_PUBLIC_APP_URL;
   }
 
-  // Vercel injects the deployment host, which keeps canonical/hreflang/sitemap
-  // URLs correct on preview deployments that have no custom domain yet.
+  // On Vercel, prefer the stable production domain over the per-deployment
+  // host. `VERCEL_URL` changes on every deploy, so using it would rewrite the
+  // canonical and hreflang URLs each time and split the indexed pages.
   const vercelHost
-    = process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.VERCEL_URL;
+    = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+      ?? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ?? process.env.NEXT_PUBLIC_VERCEL_URL
+      ?? process.env.VERCEL_URL;
 
   if (vercelHost) {
     return `https://${vercelHost}`;
