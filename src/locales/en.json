@@ -135,7 +135,13 @@
     "add_image": "Image",
     "upload_image": "Choose file",
     "image_hint": "Upload a PNG, JPG or SVG; it is stored inside the document. Use it for the official KC logo or your brand mark.",
-    "image_too_large": "That file is too large. Please use one under 1MB."
+    "image_too_large": "That file is too large. Please use one under 1MB.",
+    "tpl_care_mini": "Mini portrait",
+    "tpl_hang_square": "Square",
+    "tpl_import_portrait": "Portrait",
+    "tpl_kc_wide": "Wide",
+    "tpl_logistics_small": "Small sticker",
+    "tpl_custom_card": "Business card size"
   },
   "Editor": {
     "loading": "Loading the editor",

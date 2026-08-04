@@ -135,7 +135,13 @@
     "add_image": "Image",
     "upload_image": "Choisir un fichier",
     "image_hint": "Importez un PNG, JPG ou SVG ; il est stocké dans le document. Utilisez-le pour le logo KC officiel ou votre marque.",
-    "image_too_large": "Fichier trop volumineux. Utilisez-en un de moins de 1 Mo."
+    "image_too_large": "Fichier trop volumineux. Utilisez-en un de moins de 1 Mo.",
+    "tpl_care_mini": "Mini portrait",
+    "tpl_hang_square": "Carré",
+    "tpl_import_portrait": "Portrait",
+    "tpl_kc_wide": "Large",
+    "tpl_logistics_small": "Petit autocollant",
+    "tpl_custom_card": "Format carte de visite"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

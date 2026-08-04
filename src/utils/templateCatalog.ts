@@ -275,6 +275,110 @@ const LOGISTICS_SEAL_CARTON: LabelDocument = {
   ],
 };
 
+const CARE_LABEL_MINI: LabelDocument = {
+  templateId: 'care-label-mini',
+  widthMm: 20,
+  heightMm: 50,
+  elements: [
+    text({ id: 'brand', labelKey: 'field_brand', x: 2, y: 2.5, width: 16, size: 2.6, text: 'BVRI', bold: true, align: 'center' }),
+    text({ id: 'composition', labelKey: 'field_material', x: 2, y: 7, width: 16, size: 1.5, text: '면 100%', align: 'center' }),
+    {
+      type: 'careSymbols',
+      id: 'care',
+      labelKey: 'field_care_symbols',
+      x: 1.5,
+      y: 12,
+      composition: '면 100%',
+      glyphWidth: 3.1,
+      gap: 0.4,
+    },
+    {
+      type: 'barcode',
+      id: 'sku',
+      labelKey: 'field_barcode',
+      x: 2,
+      y: 20,
+      value: 'BVRI-M-001',
+      width: 16,
+      height: 7,
+      showValue: true,
+    },
+    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 2, y: 32, width: 16, size: 1.4, text: 'MADE IN KOREA', align: 'center', muted: true }),
+  ],
+};
+
+const HANG_TAG_SQUARE: LabelDocument = {
+  templateId: 'hang-tag-square',
+  widthMm: 60,
+  heightMm: 60,
+  elements: [
+    { type: 'hole', id: 'punch', labelKey: 'field_punch_hole', x: 28, y: 4, radius: 2 },
+    text({ id: 'brand', labelKey: 'field_brand', x: 5, y: 14, width: 50, size: 6, text: 'BVRI', bold: true, align: 'center' }),
+    { type: 'divider', id: 'rule', labelKey: 'field_divider', x: 12, y: 24, width: 36 },
+    text({ id: 'product', labelKey: 'field_product_name', x: 5, y: 27, width: 50, size: 2.6, text: '오버사이지 코튼 티셔츠', align: 'center', muted: true }),
+    text({ id: 'price', labelKey: 'field_price', x: 5, y: 33, width: 50, size: 4.4, text: '39,000원', bold: true, align: 'center' }),
+    { type: 'qr', id: 'qr', labelKey: 'field_qr', x: 22, y: 40, url: 'https://bvri.example', size: 16 },
+  ],
+};
+
+const IMPORT_LABEL_PORTRAIT: LabelDocument = {
+  templateId: 'import-label-portrait',
+  widthMm: 40,
+  heightMm: 70,
+  elements: [
+    { type: 'rect', id: 'frame', labelKey: 'field_shape', x: 2, y: 2, width: 36, height: 66, locked: true },
+    text({ id: 'heading', labelKey: 'field_text', x: 4, y: 4, width: 32, size: 2, text: '수입함 한글표시사항', bold: true }),
+    { type: 'divider', id: 'rule', labelKey: 'field_divider', x: 4, y: 8, width: 32 },
+    ...row('product', 'field_product_name', 11, '제품명', '코튼 티셔츠', 40),
+    ...row('importer', 'field_importer', 18, '수입자', '(주)부리', 40),
+    ...row('origin', 'field_country_of_origin', 25, '제조국', '베트남', 40),
+    ...row('material', 'field_material', 32, '소재', '면 100%', 40),
+    ...row('made-on', 'field_manufactured_on', 39, '제조연월', '2026.03', 40),
+    text({ id: 'caution', labelKey: 'field_caution', x: 4, y: 48, width: 32, size: 1.6, text: '· 첫 세탁 시 단독 세탁', muted: true }),
+  ],
+};
+
+const KC_MARK_WIDE: LabelDocument = {
+  templateId: 'kc-mark-wide',
+  widthMm: 35,
+  heightMm: 12,
+  elements: [
+    { type: 'rect', id: 'kc', labelKey: 'field_shape', x: 1.5, y: 2, width: 8, height: 8, dashed: true, radius: 1 },
+    text({ id: 'kc-text', labelKey: 'field_text', x: 1.5, y: 4.2, width: 8, size: 3.2, text: 'KC', bold: true, align: 'center' }),
+    text({ id: 'cert', labelKey: 'field_certification_number', x: 11, y: 2.4, width: 22, size: 1.9, text: 'KC-2026-A0417', bold: true }),
+    text({ id: 'product', labelKey: 'field_product_name', x: 11, y: 5.4, width: 22, size: 1.5, text: '코튼 티셔츠', muted: true }),
+    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 11, y: 7.8, width: 22, size: 1.4, text: 'BVRI · 베트남', muted: true }),
+  ],
+};
+
+const LOGISTICS_SEAL_SMALL: LabelDocument = {
+  templateId: 'logistics-seal-small',
+  widthMm: 40,
+  heightMm: 20,
+  elements: [
+    {
+      type: 'barcode',
+      id: 'sku',
+      labelKey: 'field_barcode',
+      x: 2.5,
+      y: 2.5,
+      value: 'BVRI-BOX-0042',
+      width: 35,
+      height: 9,
+      showValue: true,
+    },
+    text({ id: 'qty', labelKey: 'field_quantity', x: 2.5, y: 15, width: 16, size: 1.8, text: '30 EA', muted: true }),
+    text({ id: 'box', labelKey: 'field_box_number', x: 21, y: 15, width: 16, size: 1.8, text: 'BOX 1/4', align: 'right', muted: true }),
+  ],
+};
+
+const CUSTOM_CARD: LabelDocument = {
+  templateId: 'custom-card',
+  widthMm: 90,
+  heightMm: 50,
+  elements: [],
+};
+
 const CUSTOM_BLANK: LabelDocument = {
   templateId: 'custom-blank',
   widthMm: 50,
@@ -285,15 +389,21 @@ const CUSTOM_BLANK: LabelDocument = {
 const TEMPLATES: readonly Template[] = [
   { id: 'care-label-standard', category: 'care-label', nameKey: 'tpl_care_standard', document: CARE_LABEL_STANDARD },
   { id: 'care-label-wide', category: 'care-label', nameKey: 'tpl_care_wide', document: CARE_LABEL_WIDE },
+  { id: 'care-label-mini', category: 'care-label', nameKey: 'tpl_care_mini', document: CARE_LABEL_MINI },
   { id: 'hang-tag-classic', category: 'hang-tag', nameKey: 'tpl_hang_classic', document: HANG_TAG_CLASSIC },
   { id: 'hang-tag-minimal', category: 'hang-tag', nameKey: 'tpl_hang_minimal', document: HANG_TAG_MINIMAL },
+  { id: 'hang-tag-square', category: 'hang-tag', nameKey: 'tpl_hang_square', document: HANG_TAG_SQUARE },
   { id: 'import-label-full', category: 'import-label', nameKey: 'tpl_import_full', document: IMPORT_LABEL_FULL },
   { id: 'import-label-compact', category: 'import-label', nameKey: 'tpl_import_compact', document: IMPORT_LABEL_COMPACT },
+  { id: 'import-label-portrait', category: 'import-label', nameKey: 'tpl_import_portrait', document: IMPORT_LABEL_PORTRAIT },
   { id: 'kc-mark-micro', category: 'kc-mark', nameKey: 'tpl_kc_micro', document: KC_MARK_MICRO },
   { id: 'kc-mark-stacked', category: 'kc-mark', nameKey: 'tpl_kc_stacked', document: KC_MARK_STACKED },
+  { id: 'kc-mark-wide', category: 'kc-mark', nameKey: 'tpl_kc_wide', document: KC_MARK_WIDE },
   { id: 'logistics-seal-polybag', category: 'logistics-seal', nameKey: 'tpl_logistics_polybag', document: LOGISTICS_SEAL_POLYBAG },
   { id: 'logistics-seal-carton', category: 'logistics-seal', nameKey: 'tpl_logistics_carton', document: LOGISTICS_SEAL_CARTON },
+  { id: 'logistics-seal-small', category: 'logistics-seal', nameKey: 'tpl_logistics_small', document: LOGISTICS_SEAL_SMALL },
   { id: 'custom-blank', category: 'custom', nameKey: 'tpl_custom_blank', document: CUSTOM_BLANK },
+  { id: 'custom-card', category: 'custom', nameKey: 'tpl_custom_card', document: CUSTOM_CARD },
 ];
 
 export const DEFAULT_TEMPLATE_ID = 'care-label-standard';

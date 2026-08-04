@@ -135,7 +135,13 @@
     "add_image": "이미지",
     "upload_image": "파일 선택",
     "image_hint": "PNG·JPG·SVG를 올리면 문서에 함께 저장됩니다. KC 정품 로고나 브랜드 로고를 넣으세요.",
-    "image_too_large": "파일이 너무 큽니다. 1MB 이하로 올려주세요."
+    "image_too_large": "파일이 너무 큽니다. 1MB 이하로 올려주세요.",
+    "tpl_care_mini": "초소형 세로",
+    "tpl_hang_square": "정사각형",
+    "tpl_import_portrait": "세로형",
+    "tpl_kc_wide": "가로 넓은형",
+    "tpl_logistics_small": "소형 스티커",
+    "tpl_custom_card": "명함 크기"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",
