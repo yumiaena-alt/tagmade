@@ -6,7 +6,7 @@
 - 라이브: <https://260804tag.vercel.app>
 - 리포: <https://github.com/yumiaena-alt/tagmade> (private)
 - 배포 설정: [DEPLOY.md](DEPLOY.md)
-- 진행 상황·남은 작업: [PROGRESS.md](PROGRESS.md)
+- **인수인계·진행 문서: [PROGRESS.md](PROGRESS.md)** — 다른 계정이 이어받을 때 여기부터
 
 원래 [ixartz/SaaS-Boilerplate](https://github.com/ixartz/SaaS-Boilerplate)를
 뼈대로 시작했고, 쓰지 않는 DB·대시보드·요금제 스택은 제거했습니다.

@@ -1,7 +1,7 @@
 # CLAUDE.md
 
-의류 라벨 스튜디오. 배경과 실행 방법은 [README.md](README.md), 현재 상태와 남은
-작업은 [PROGRESS.md](PROGRESS.md), 배포는 [DEPLOY.md](DEPLOY.md)를 먼저 읽으세요.
+의류 라벨 스튜디오. 배경과 실행 방법은 [README.md](README.md), 현재 상태·인수인계·
+남은 작업은 [PROGRESS.md](PROGRESS.md), 배포는 [DEPLOY.md](DEPLOY.md)를 먼저 읽으세요.
 
 ## 반드시 지킬 것
 
