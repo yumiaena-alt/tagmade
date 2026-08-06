@@ -7,6 +7,7 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import { PX_PER_MM, useViewStore } from '@/store/useViewStore';
 import { CanvasRuler, RULER_SIZE } from './CanvasRulers';
 import { DocumentCanvas } from './DocumentCanvas';
+import { HistoryControls } from './HistoryControls';
 
 /** Breathing room around the artwork when fitting it to the viewport. */
 const FIT_PADDING = 64;
@@ -150,6 +151,8 @@ export const CanvasWorkspace = () => {
           </div>
         </div>
       </div>
+
+      <HistoryControls />
 
       {/* Zoom controls, kept out of the scroll surface so they never scroll away. */}
       <div className="

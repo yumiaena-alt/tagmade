@@ -1,9 +1,11 @@
 /**
- * The open document, its selection, and every mutation the studio performs.
+ * The open document, its selection, its undo history, and every mutation the
+ * studio performs.
  *
  * Both editing surfaces write here: the layer inputs in the left panel and
  * direct manipulation on the canvas. There is one copy of the truth, so a drag
- * on the canvas and a keystroke in the panel can never disagree.
+ * on the canvas and a keystroke in the panel can never disagree — and because
+ * every change funnels through `commit`, undo covers all of them for free.
  */
 import type { AddableType, DocElement, LabelDocument } from '@/utils/documentModel';
 import { create } from 'zustand';
@@ -11,11 +13,17 @@ import { persist } from 'zustand/middleware';
 import { withContent } from '@/utils/documentModel';
 import { DEFAULT_TEMPLATE_ID, findTemplate } from '@/utils/templateCatalog';
 
+/** Depth of the undo stack. Documents are small, so this is cheap. */
+const MAX_HISTORY = 60;
+
+/**
+ * Consecutive edits of the same thing inside this window collapse into one
+ * history entry, so typing a brand name is one undo rather than one per letter.
+ */
+const COALESCE_MS = 700;
+
 function templateDocument(id: string): LabelDocument {
-  return (
-    findTemplate(id)?.document
-    ?? findTemplate(DEFAULT_TEMPLATE_ID)!.document
-  );
+  return findTemplate(id)?.document ?? findTemplate(DEFAULT_TEMPLATE_ID)!.document;
 }
 
 let elementCounter = 0;
@@ -117,6 +125,8 @@ type DocumentStore = {
   readonly doc: LabelDocument;
   /** Currently selected element id, or null when nothing is selected. */
   readonly selectedId: string | null;
+  readonly past: readonly LabelDocument[];
+  readonly future: readonly LabelDocument[];
   /** Replaces the document with a template preset. */
   readonly applyTemplate: (templateId: string) => void;
   readonly select: (id: string | null) => void;
@@ -128,85 +138,178 @@ type DocumentStore = {
   readonly addElement: (type: AddableType) => void;
   readonly removeElement: (id: string) => void;
   readonly resizePage: (widthMm: number, heightMm: number) => void;
+  readonly undo: () => void;
+  readonly redo: () => void;
 };
+
+type HistoryState = Pick<DocumentStore, 'doc' | 'past' | 'future'>;
+
+/** Identifies what is being edited, so repeats of it can coalesce. */
+let lastCommit: { key: string; at: number } | null = null;
+
+/**
+ * Produces the next document plus history.
+ *
+ * @param state Current document and stacks.
+ * @param nextDoc The document after the change.
+ * @param coalesceKey When the previous commit shared this key and happened
+ * within `COALESCE_MS`, the change amends the last history entry instead of
+ * adding one. Omit it for discrete actions that should always be undoable.
+ */
+function commit(
+  state: HistoryState,
+  nextDoc: LabelDocument,
+  coalesceKey?: string,
+): HistoryState {
+  const now = Date.now();
+  const shouldCoalesce
+    = coalesceKey !== undefined
+      && lastCommit !== null
+      && lastCommit.key === coalesceKey
+      && now - lastCommit.at < COALESCE_MS;
+
+  lastCommit = coalesceKey === undefined ? null : { key: coalesceKey, at: now };
+
+  return {
+    doc: nextDoc,
+    // Coalescing keeps the older snapshot, so undo jumps to before the run of
+    // edits rather than stepping through each keystroke.
+    past: shouldCoalesce
+      ? state.past
+      : [...state.past, state.doc].slice(-MAX_HISTORY),
+    future: [],
+  };
+}
+
+/** Drops a selection that the restored document no longer contains. */
+function keepSelection(doc: LabelDocument, selectedId: string | null) {
+  return doc.elements.some(element => element.id === selectedId)
+    ? selectedId
+    : null;
+}
+
+function mapElements(
+  doc: LabelDocument,
+  change: (element: DocElement) => DocElement,
+): LabelDocument {
+  return { ...doc, elements: doc.elements.map(change) };
+}
 
 export const useDocumentStore = create<DocumentStore>()(
   persist(
     set => ({
       doc: templateDocument(DEFAULT_TEMPLATE_ID),
       selectedId: null,
+      past: [],
+      future: [],
 
       applyTemplate: templateId =>
-        set({ doc: templateDocument(templateId), selectedId: null }),
+        set(state => ({
+          ...commit(state, templateDocument(templateId)),
+          selectedId: null,
+        })),
 
       select: id => set({ selectedId: id }),
 
       updateElement: (id, patch) =>
-        set(state => ({
-          doc: {
-            ...state.doc,
-            elements: state.doc.elements.map(element =>
-              element.id === id
-                ? ({ ...element, ...patch } as DocElement)
-                : element,
-            ),
-          },
-        })),
+        set(state =>
+          commit(
+            state,
+            mapElements(state.doc, element =>
+              element.id === id ? ({ ...element, ...patch } as DocElement) : element),
+            `update:${id}:${Object.keys(patch).join(',')}`,
+          )),
 
       setElementContent: (id, content) =>
-        set(state => ({
-          doc: {
-            ...state.doc,
-            elements: state.doc.elements.map(element =>
-              element.id === id ? withContent(element, content) : element,
-            ),
-          },
-        })),
+        set(state =>
+          commit(
+            state,
+            mapElements(state.doc, element =>
+              element.id === id ? withContent(element, content) : element),
+            `content:${id}`,
+          )),
 
       moveElement: (id, position) =>
-        set(state => ({
-          doc: {
-            ...state.doc,
-            elements: state.doc.elements.map(element =>
-              element.id === id ? { ...element, ...position } : element,
-            ),
-          },
-        })),
+        set(state =>
+          commit(
+            state,
+            mapElements(state.doc, element =>
+              element.id === id ? { ...element, ...position } : element),
+          )),
 
       addElement: type =>
         set((state) => {
           const element = blankElement(type, state.doc);
 
           return {
-            doc: {
+            ...commit(state, {
               ...state.doc,
               elements: [...state.doc.elements, element],
-            },
+            }),
             selectedId: element.id,
           };
         }),
 
       removeElement: id =>
         set(state => ({
-          doc: {
+          ...commit(state, {
             ...state.doc,
             elements: state.doc.elements.filter(element => element.id !== id),
-          },
+          }),
           selectedId: state.selectedId === id ? null : state.selectedId,
         })),
 
       resizePage: (widthMm, heightMm) =>
-        set(state => ({
-          doc: {
-            ...state.doc,
-            widthMm: Math.max(5, widthMm),
-            heightMm: Math.max(5, heightMm),
-          },
-        })),
+        set(state =>
+          commit(
+            state,
+            {
+              ...state.doc,
+              widthMm: Math.max(5, widthMm),
+              heightMm: Math.max(5, heightMm),
+            },
+            'resizePage',
+          )),
+
+      undo: () =>
+        set((state) => {
+          const previous = state.past.at(-1);
+
+          if (!previous) {
+            return state;
+          }
+
+          lastCommit = null;
+
+          return {
+            doc: previous,
+            past: state.past.slice(0, -1),
+            future: [state.doc, ...state.future].slice(0, MAX_HISTORY),
+            selectedId: keepSelection(previous, state.selectedId),
+          };
+        }),
+
+      redo: () =>
+        set((state) => {
+          const [next, ...rest] = state.future;
+
+          if (!next) {
+            return state;
+          }
+
+          lastCommit = null;
+
+          return {
+            doc: next,
+            past: [...state.past, state.doc].slice(-MAX_HISTORY),
+            future: rest,
+            selectedId: keepSelection(next, state.selectedId),
+          };
+        }),
     }),
     {
       name: 'smart-label-document-store',
-      // Selection is per-session; only the document is worth restoring.
+      // Selection and history are per-session; only the document is restored.
       partialize: state => ({ doc: state.doc }),
       merge: (persisted, current) => {
         const saved = persisted as { doc?: LabelDocument } | undefined;

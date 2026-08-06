@@ -110,7 +110,9 @@
     "height_label": "Hauteur",
     "presets_label": "Formats courants",
     "rulers_label": "Afficher les règles",
-    "export_heading": "Exporter"
+    "export_heading": "Exporter",
+    "undo": "Annuler",
+    "redo": "Rétablir"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

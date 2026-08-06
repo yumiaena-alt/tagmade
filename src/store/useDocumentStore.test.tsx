@@ -8,6 +8,9 @@ const STORAGE_KEY = 'smart-label-document-store';
 function reset() {
   localStorage.removeItem(STORAGE_KEY);
   useDocumentStore.getState().applyTemplate('care-label-standard');
+  // Applying the template is itself an undoable change, so clear the stacks to
+  // give each test a clean history.
+  useDocumentStore.setState({ past: [], future: [] });
 }
 
 const store = () => useDocumentStore.getState();
@@ -152,6 +155,101 @@ describe('useDocumentStore', () => {
 
       expect(store().doc.widthMm).toBeGreaterThanOrEqual(5);
       expect(store().doc.heightMm).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe('history', () => {
+    it('starts with nothing to undo or redo', () => {
+      expect(store().past).toHaveLength(0);
+      expect(store().future).toHaveLength(0);
+    });
+
+    it('undoes an element removal', () => {
+      const before = store().doc.elements.length;
+
+      store().removeElement('brand');
+      store().undo();
+
+      expect(store().doc.elements).toHaveLength(before);
+      expect(store().doc.elements.some(e => e.id === 'brand')).toBe(true);
+    });
+
+    it('redoes what was undone', () => {
+      store().removeElement('brand');
+      store().undo();
+      store().redo();
+
+      expect(store().doc.elements.some(e => e.id === 'brand')).toBe(false);
+    });
+
+    it('undoes a page resize', () => {
+      store().resizePage(64, 48);
+      store().undo();
+
+      expect(store().doc.widthMm).toBe(30);
+      expect(store().doc.heightMm).toBe(70);
+    });
+
+    it('undoes a template swap', () => {
+      store().applyTemplate('hang-tag-minimal');
+      store().undo();
+
+      expect(store().doc.templateId).toBe('care-label-standard');
+    });
+
+    it('collapses a run of edits to the same field into one undo', () => {
+      store().setElementContent('brand', 'A');
+      store().setElementContent('brand', 'AB');
+      store().setElementContent('brand', 'ABC');
+      store().undo();
+
+      expect(store().doc.elements.find(e => e.id === 'brand')).toMatchObject({
+        text: 'BVRI',
+      });
+    });
+
+    it('keeps separate fields separately undoable', () => {
+      store().setElementContent('brand', 'ACME');
+      store().setElementContent('sku', 'NEW-SKU');
+      store().undo();
+
+      expect(store().doc.elements.find(e => e.id === 'sku')).toMatchObject({
+        value: 'BVRI-2026-TS-S',
+      });
+      expect(store().doc.elements.find(e => e.id === 'brand')).toMatchObject({
+        text: 'ACME',
+      });
+    });
+
+    it('clears the redo stack once a new change is made', () => {
+      store().removeElement('brand');
+      store().undo();
+
+      expect(store().future).toHaveLength(1);
+
+      store().removeElement('sku');
+
+      expect(store().future).toHaveLength(0);
+    });
+
+    it('does nothing when there is no history', () => {
+      const before = store().doc;
+
+      store().undo();
+      store().redo();
+
+      expect(store().doc).toBe(before);
+    });
+
+    it('drops a selection the restored document no longer has', () => {
+      store().addElement('text');
+      const addedId = store().selectedId;
+
+      expect(addedId).not.toBeNull();
+
+      store().undo();
+
+      expect(store().selectedId).toBeNull();
     });
   });
 

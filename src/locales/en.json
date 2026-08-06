@@ -110,7 +110,9 @@
     "height_label": "Height",
     "presets_label": "Common sizes",
     "rulers_label": "Show rulers",
-    "export_heading": "Export"
+    "export_heading": "Export",
+    "undo": "Undo",
+    "redo": "Redo"
   },
   "Editor": {
     "loading": "Loading the editor",

@@ -110,7 +110,9 @@
     "height_label": "세로",
     "presets_label": "자주 쓰는 기공",
     "rulers_label": "눈금자 보기",
-    "export_heading": "추출하기"
+    "export_heading": "추출하기",
+    "undo": "되돌리기",
+    "redo": "다시 실행"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",
