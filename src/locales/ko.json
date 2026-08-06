@@ -34,49 +34,9 @@
     "feature6_title": "비회원 자동 보관",
     "feature_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다."
   },
-  "Pricing": {
-    "section_subtitle": "요금제",
-    "section_title": "지금은 전부 무료로 쓰실 수 있습니다",
-    "section_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다.",
-    "button_text": "시작하기"
-  },
-  "PricingPlans": {
-    "free_plan_name": "무료",
-    "premium_plan_name": "프리미엄",
-    "enterprise_plan_name": "엔터프라이즈"
-  },
-  "PricingCard": {
-    "free_plan_description": "개인 셀러용",
-    "premium_plan_description": "소규모 팀용",
-    "enterprise_plan_description": "대형 브랜드용",
-    "plan_price": "${price}",
-    "plan_interval_month": "/ 월",
-    "plan_interval_year": "/ 년"
-  },
-  "PricingFeatures": {
-    "feature_team_member": "팀원 최대 {number}명",
-    "feature_website": "웹사이트 최대 {number}개",
-    "feature_storage": "저장 공간 {number}GB",
-    "feature_transfer": "트래픽 {number}TB",
-    "feature_email_support": "이메일 지원"
-  },
-  "SponsorLogos": {
-    "sponsored_by": "후원",
-    "clerk_logo": "Clerk 로고",
-    "sentry_logo": "Sentry 로고",
-    "crowdin_logo": "Crowdin 로고",
-    "arcjet_logo": "Arcjet 로고",
-    "coderabbit_logo": "CodeRabbit 로고",
-    "nextjs_boilerplate_logo": "Next.js SaaS Boilerplate 로고"
-  },
   "FAQ": {
     "question": "생성된 세탁 기호를 그대로 인쇄해도 되나요?",
     "answer": "매칭 로직은 KS K 0021 우선순위 규칙을 따르지만, 현재 아이콘은 알아보기 쉬운 근사 도형입니다. 법적 의미는 아이콘 옆에 인쇄되는 한글 문구가 담고 있습니다. 실제 발주용 라벨을 인쇄하기 전에는 정품 KS 심볼 세트로 교체하고, 최종 표기는 담당자가 확인해 주세요."
-  },
-  "CTA": {
-    "title": "지금 바로 만들어 보세요",
-    "description": "회원가입도, 결제도 필요 없습니다. 혼용률만 붙여넣으면 됩니다.",
-    "button_text": "Next.js SaaS 스타터 킷 받기"
   },
   "Footer": {
     "product": "라벨 생성기",
@@ -110,7 +70,6 @@
     "add_barcode": "바코드",
     "add_careSymbols": "세탁 기호",
     "add_qr": "QR코드",
-    "page_size": "캔버스 크기 (mm)",
     "delete_element": "선택 요소 삭제",
     "no_selection": "캔버스에서 요소를 클릭하면 여기에 속성이 나타납니다.",
     "canvas_hint": "클릭해 선택 · 드래그로 이동 · 핸들로 크기 조절 · 텍스트는 더블클릭해 바로 수정",
@@ -141,7 +100,17 @@
     "tpl_import_portrait": "세로형",
     "tpl_kc_wide": "가로 넓은형",
     "tpl_logistics_small": "소형 스티커",
-    "tpl_custom_card": "명함 크기"
+    "tpl_custom_card": "명함 크기",
+    "zoom_in": "확대",
+    "zoom_out": "축소",
+    "zoom_fit": "화면에 맞춤",
+    "zoom_fit_short": "맞춤",
+    "page_props_heading": "페이지 속성",
+    "width_label": "가로",
+    "height_label": "세로",
+    "presets_label": "자주 쓰는 기공",
+    "rulers_label": "눈금자 보기",
+    "export_heading": "추출하기"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

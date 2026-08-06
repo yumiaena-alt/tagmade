@@ -50,7 +50,6 @@ export const ElementsPanel = () => {
   const updateElement = useDocumentStore(state => state.updateElement);
   const addElement = useDocumentStore(state => state.addElement);
   const removeElement = useDocumentStore(state => state.removeElement);
-  const resizePage = useDocumentStore(state => state.resizePage);
 
   const addLabels: Record<AddableType, string> = {
     text: t('add_text'),
@@ -82,29 +81,6 @@ export const ElementsPanel = () => {
 
   return (
     <div className="space-y-6">
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium">{t('page_size')}</h2>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            className={CONTROL_CLASS}
-            value={doc.widthMm}
-            min={5}
-            onChange={event =>
-              resizePage(Number(event.target.value) || doc.widthMm, doc.heightMm)}
-          />
-          <span aria-hidden="true" className="text-muted-foreground">×</span>
-          <input
-            type="number"
-            className={CONTROL_CLASS}
-            value={doc.heightMm}
-            min={5}
-            onChange={event =>
-              resizePage(doc.widthMm, Number(event.target.value) || doc.heightMm)}
-          />
-        </div>
-      </section>
-
       <section className="space-y-2">
         <h2 className="text-sm font-medium">{t('add_heading')}</h2>
         <ul className="flex flex-wrap gap-1.5">

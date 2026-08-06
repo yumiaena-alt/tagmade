@@ -3,15 +3,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Section } from '@/features/landing/Section';
 import { StudioShellLoader } from '@/features/studio/StudioShellLoader';
 import { routing } from '@/libs/I18nRouting';
-import { CTA } from '@/templates/CTA';
 import { DemoBanner } from '@/templates/DemoBanner';
 import { FAQ } from '@/templates/FAQ';
 import { Features } from '@/templates/Features';
 import { Footer } from '@/templates/Footer';
 import { Hero } from '@/templates/Hero';
 import { Navbar } from '@/templates/Navbar';
-import { Pricing } from '@/templates/Pricing';
-import { Sponsors } from '@/templates/Sponsors';
 import { AllLocales } from '@/utils/AppConfig';
 
 type IndexProps = {
@@ -75,11 +72,8 @@ export default async function Index(props: IndexProps) {
         </Section>
 
         <Hero />
-        <Sponsors />
         <Features />
-        <Pricing />
         <FAQ />
-        <CTA />
       </main>
 
       <Footer />
