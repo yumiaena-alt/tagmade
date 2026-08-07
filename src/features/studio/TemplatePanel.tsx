@@ -47,6 +47,7 @@ export const TemplatePanel = () => {
     'hang-tag-classic': t('tpl_hang_classic'),
     'hang-tag-minimal': t('tpl_hang_minimal'),
     'hang-tag-square': t('tpl_hang_square'),
+    'hang-tag-wide': t('tpl_hang_wide'),
     'import-label-full': t('tpl_import_full'),
     'import-label-compact': t('tpl_import_compact'),
     'import-label-portrait': t('tpl_import_portrait'),

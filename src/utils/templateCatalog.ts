@@ -321,6 +321,26 @@ const HANG_TAG_SQUARE: LabelDocument = {
   ],
 };
 
+/**
+ * Landscape hang tag: the punch hole moves to the left edge so the tag hangs
+ * sideways, which leaves a wide column for the copy and room for the QR beside
+ * it rather than under it.
+ */
+const HANG_TAG_WIDE: LabelDocument = {
+  templateId: 'hang-tag-wide',
+  widthMm: 90,
+  heightMm: 50,
+  elements: [
+    { type: 'hole', id: 'punch', labelKey: 'field_punch_hole', x: 4, y: 23, radius: 2 },
+    text({ id: 'brand', labelKey: 'field_brand', x: 12, y: 8, width: 44, size: 6, text: 'BVRI', bold: true }),
+    text({ id: 'product', labelKey: 'field_product_name', x: 12, y: 17, width: 44, size: 2.6, text: '오버사이즈 코튼 티셔츠', muted: true }),
+    text({ id: 'price', labelKey: 'field_price', x: 12, y: 23, width: 44, size: 4.4, text: '39,000원', bold: true }),
+    { type: 'divider', id: 'rule', labelKey: 'field_divider', x: 12, y: 32, width: 44 },
+    text({ id: 'policy', labelKey: 'field_exchange_policy', x: 12, y: 34.5, width: 44, size: 2, text: '교환·환불은 택 제거 전 14일 내 가능합니다.', muted: true }),
+    { type: 'qr', id: 'qr', labelKey: 'field_qr', x: 62, y: 13, url: 'https://bvri.example/ts-s', size: 24 },
+  ],
+};
+
 const IMPORT_LABEL_PORTRAIT: LabelDocument = {
   templateId: 'import-label-portrait',
   widthMm: 40,
@@ -393,6 +413,7 @@ const TEMPLATES: readonly Template[] = [
   { id: 'hang-tag-classic', category: 'hang-tag', nameKey: 'tpl_hang_classic', document: HANG_TAG_CLASSIC },
   { id: 'hang-tag-minimal', category: 'hang-tag', nameKey: 'tpl_hang_minimal', document: HANG_TAG_MINIMAL },
   { id: 'hang-tag-square', category: 'hang-tag', nameKey: 'tpl_hang_square', document: HANG_TAG_SQUARE },
+  { id: 'hang-tag-wide', category: 'hang-tag', nameKey: 'tpl_hang_wide', document: HANG_TAG_WIDE },
   { id: 'import-label-full', category: 'import-label', nameKey: 'tpl_import_full', document: IMPORT_LABEL_FULL },
   { id: 'import-label-compact', category: 'import-label', nameKey: 'tpl_import_compact', document: IMPORT_LABEL_COMPACT },
   { id: 'import-label-portrait', category: 'import-label', nameKey: 'tpl_import_portrait', document: IMPORT_LABEL_PORTRAIT },

@@ -15,14 +15,9 @@
     "title": "Des <important>étiquettes d'entretien</important> prêtes pour l'usine en une seconde."
   },
   "Footer": {
-    "product": "Produit",
-    "docs": "Docs",
-    "blog": "Blog",
-    "community": "Communauté",
-    "company": "Entreprise",
     "terms_of_service": "Conditions d'utilisation",
     "privacy_policy": "Politique de confidentialité",
-    "footer_text": "© {year} {name}. Fait avec <author></author>."
+    "footer_text": "© {year} {name}."
   },
   "TemplatePicker": {
     "mode_care_label_name": "Étiquette d'entretien",
@@ -73,6 +68,7 @@
     "image_too_large": "Fichier trop volumineux. Utilisez-en un de moins de 1 Mo.",
     "tpl_care_mini": "Mini portrait",
     "tpl_hang_square": "Carré",
+    "tpl_hang_wide": "Paysage",
     "tpl_import_portrait": "Portrait",
     "tpl_kc_wide": "Large",
     "tpl_logistics_small": "Petit autocollant",

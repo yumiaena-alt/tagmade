@@ -1,36 +1,23 @@
 import { useTranslations } from 'next-intl';
 import { AppConfig } from '@/utils/AppConfig';
 
+/**
+ * Footer: the logo, the copyright line, and the legal links.
+ *
+ * The site-map columns and the social icon row that the boilerplate shipped
+ * here are gone — every one of them pointed at `/sign-up`, and none of the
+ * accounts they implied exist.
+ */
 export const CenteredFooter = (props: {
   logo: React.ReactNode;
   name: string;
-  iconList: React.ReactNode;
   legalLinks: React.ReactNode;
-  children: React.ReactNode;
 }) => {
   const t = useTranslations('Footer');
 
   return (
     <div className="flex flex-col items-center text-center">
       {props.logo}
-
-      <ul className="
-        mt-4 flex gap-x-8 text-lg
-        max-sm:flex-col
-        [&_a:hover]:opacity-70
-      "
-      >
-        {props.children}
-      </ul>
-
-      <ul className="
-        mt-4 flex flex-row gap-x-5 text-primary
-        [&_svg]:size-5 [&_svg]:fill-current
-        [&_svg:hover]:opacity-60
-      "
-      >
-        {props.iconList}
-      </ul>
 
       <div className="
         mt-6 flex w-full items-center justify-between gap-y-2 border-t pt-3
@@ -39,27 +26,10 @@ export const CenteredFooter = (props: {
       "
       >
         <div>
-          {t.rich('footer_text', {
+          {t('footer_text', {
             year: new Date().getFullYear(),
             name: AppConfig.name,
-            author: () => (
-              <a
-                className="
-                  text-blue-500
-                  hover:text-blue-600
-                "
-                href="https://nextjs-boilerplate.com"
-              >
-                Next.js Boilerplate
-              </a>
-            ),
           })}
-          {/*
-           * PLEASE READ THIS SECTION
-           * I'm an indie maker with limited resources and funds, I'll really appreciate if you could have a link to my website.
-           * The link doesn't need to appear on every pages, one link on one page is enough.
-           * For example, in the `About` page. Thank you for your support, it'll mean a lot to me.
-           */}
         </div>
 
         <ul className="

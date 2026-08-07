@@ -61,7 +61,10 @@ export default async function Index(props: IndexProps) {
           it left the canvas smaller than the panels around it.
         */}
         <div className="px-3 pt-4 pb-6">
-          <h1 className="mb-3 text-2xl font-bold tracking-tight text-balance">
+          <h1 className={`
+            mb-3 text-center text-4xl font-bold tracking-tight text-balance
+          `}
+          >
             {t.rich('title', {
               important: chunks => (
                 <span className="

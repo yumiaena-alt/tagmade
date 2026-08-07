@@ -15,14 +15,9 @@
     "title": "공장 발주용 <important>케어 라벨</important>, 이제 1초면 끝납니다."
   },
   "Footer": {
-    "product": "라벨 생성기",
-    "docs": "사용 가이드",
-    "blog": "블로그",
-    "community": "커뮤니티",
-    "company": "회사",
     "terms_of_service": "이용약관",
     "privacy_policy": "개인정보 처리방침",
-    "footer_text": "© {year} {name}. Made with <author></author>."
+    "footer_text": "© {year} {name}."
   },
   "TemplatePicker": {
     "mode_care_label_name": "의류 케어라벨",
@@ -73,6 +68,7 @@
     "image_too_large": "파일이 너무 큽니다. 1MB 이하로 올려주세요.",
     "tpl_care_mini": "초소형 세로",
     "tpl_hang_square": "정사각형",
+    "tpl_hang_wide": "가로형",
     "tpl_import_portrait": "세로형",
     "tpl_kc_wide": "가로 넓은형",
     "tpl_logistics_small": "소형 스티커",

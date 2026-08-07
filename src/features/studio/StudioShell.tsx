@@ -38,7 +38,7 @@ export const StudioShell = () => {
     */
     <div
       className={`
-        flex h-[calc(100svh-10rem)] min-h-[560px] flex-col gap-2
+        flex h-[calc(100svh-11rem)] min-h-[560px] flex-col gap-2
         max-lg:h-auto
       `}
     >

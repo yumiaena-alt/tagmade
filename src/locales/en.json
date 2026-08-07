@@ -15,14 +15,9 @@
     "title": "Factory-ready <important>care labels</important> in about a second."
   },
   "Footer": {
-    "product": "Product",
-    "docs": "Docs",
-    "blog": "Blog",
-    "community": "Community",
-    "company": "Company",
     "terms_of_service": "Terms Of Service",
     "privacy_policy": "Privacy Policy",
-    "footer_text": "© {year} {name}. Made with <author></author>."
+    "footer_text": "© {year} {name}."
   },
   "TemplatePicker": {
     "mode_care_label_name": "Apparel care label",
@@ -73,6 +68,7 @@
     "image_too_large": "That file is too large. Please use one under 1MB.",
     "tpl_care_mini": "Mini portrait",
     "tpl_hang_square": "Square",
+    "tpl_hang_wide": "Landscape",
     "tpl_import_portrait": "Portrait",
     "tpl_kc_wide": "Wide",
     "tpl_logistics_small": "Small sticker",
