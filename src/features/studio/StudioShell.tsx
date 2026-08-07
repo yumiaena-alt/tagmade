@@ -38,7 +38,7 @@ export const StudioShell = () => {
     */
     <div
       className={`
-        flex h-[calc(100svh-13.5rem)] min-h-[560px] flex-col gap-2
+        flex h-[calc(100svh-10rem)] min-h-[560px] flex-col gap-2
         max-lg:h-auto
       `}
     >
@@ -50,17 +50,25 @@ export const StudioShell = () => {
           max-lg:flex-col
         `}
       >
-        {/* Left: template browser / layers */}
+        {/*
+          Left: template browser / layers. One bordered box with the tabs
+          inside it, so it starts and ends on the same lines as the workspace
+          beside it — the tab strip used to sit outside the border and push the
+          panel down by its own height.
+        */}
         <aside
           className={`
-            flex w-[280px] shrink-0 flex-col gap-2
+            flex w-[280px] shrink-0 flex-col overflow-hidden rounded-xl border
+            border-border
             max-lg:w-full
           `}
         >
           <div
             role="tablist"
             aria-label={t('templates_heading')}
-            className="flex shrink-0 gap-1 rounded-lg bg-secondary p-1"
+            className={`
+              flex shrink-0 gap-1 border-b border-border bg-secondary p-1
+            `}
           >
             {PANEL_TABS.map(item => (
               <button
@@ -89,7 +97,7 @@ export const StudioShell = () => {
 
           <div
             className={`
-              min-h-0 flex-1 overflow-y-auto rounded-xl border border-border p-3
+              min-h-0 flex-1 overflow-y-auto p-3
               max-lg:max-h-[460px]
             `}
           >
@@ -100,14 +108,11 @@ export const StudioShell = () => {
         {/* Centre: the artwork, taking every pixel the panels do not need */}
         <div
           className={`
-            flex min-h-0 min-w-0 flex-1 flex-col gap-1.5
+            flex min-h-0 min-w-0 flex-1 flex-col
             max-lg:h-[560px]
           `}
         >
           <CanvasWorkspace />
-          <p className="shrink-0 text-center text-xs text-muted-foreground">
-            {t('canvas_hint')}
-          </p>
         </div>
       </div>
     </div>

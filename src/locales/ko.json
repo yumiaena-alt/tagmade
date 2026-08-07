@@ -12,27 +12,7 @@
     "button_label": "언어 변경"
   },
   "Hero": {
-    "follow_twitter": "@Ixartz 트위터 팔로우",
-    "title": "공장 발주용 <important>케어 라벨</important>, 이제 1초면 끝납니다.",
-    "description": "소재 표기를 그대로 붙여넣으면 법적 표준 소재명으로 변환하고, 세탁 기호와 주의사항까지 자동으로 매칭합니다. AI 토큰 비용 없이 정규표현식과 룰 엔진으로만 동작합니다.",
-    "primary_button": "Next.js SaaS 스타터 킷 받기",
-    "secondary_button": "GitHub에서 스타"
-  },
-  "Features": {
-    "section_subtitle": "핵심 기능",
-    "section_title": "라벨 실무에 필요한 것만 담았습니다",
-    "section_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다.",
-    "feature1_title": "혼용률 자동 파싱",
-    "feature2_title": "KS K 0021 룰 엔진",
-    "feature3_title": "Code 128 바코드",
-    "feature4_title": "실시간 캔버스 편집",
-    "feature5_title": "인쇄용 벡터 PDF",
-    "feature6_title": "비회원 자동 보관",
-    "feature_description": "혼용률 파싱부터 인쇄용 PDF까지, 공장에 넘길 라벨 한 장을 만드는 전 과정을 한 화면에서 처리합니다."
-  },
-  "FAQ": {
-    "question": "생성된 세탁 기호를 그대로 인쇄해도 되나요?",
-    "answer": "매칭 로직은 KS K 0021 우선순위 규칙을 따르지만, 현재 아이콘은 알아보기 쉬운 근사 도형입니다. 법적 의미는 아이콘 옆에 인쇄되는 한글 문구가 담고 있습니다. 실제 발주용 라벨을 인쇄하기 전에는 정품 KS 심볼 세트로 교체하고, 최종 표기는 담당자가 확인해 주세요."
+    "title": "공장 발주용 <important>케어 라벨</important>, 이제 1초면 끝납니다."
   },
   "Footer": {
     "product": "라벨 생성기",
@@ -53,8 +33,6 @@
     "mode_custom_name": "직접 제작"
   },
   "Studio": {
-    "page_heading": "템플릿을 고르고 캔버스에서 바로 편집하세요",
-    "page_lede": "의류 케어라벨·행택·수입 표시사항·KC 마크·물류 씰 템플릿을 규격째로 불러오고, 텍스트는 더블클릭해 바로 고칩니다. 빈 캔버스에서 직접 만들 수도 있습니다.",
     "tab_templates": "템플릿",
     "tab_elements": "요소",
     "templates_heading": "템플릿 선택",

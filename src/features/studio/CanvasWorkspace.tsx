@@ -97,116 +97,135 @@ export const CanvasWorkspace = () => {
 
   return (
     <div className="
-      relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border
+      flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border
       border-border bg-muted/50
     "
     >
-      {showRulers
-        ? (
-            <div className="
-              flex shrink-0 border-b border-border bg-background/70
-            "
-            >
-              <div
-                className="shrink-0 border-r border-border"
-                style={{ width: RULER_SIZE, height: RULER_SIZE }}
-              />
-              <div className="overflow-hidden">
-                <CanvasRuler
-                  lengthMm={doc.widthMm}
-                  pxPerMm={pxPerMm}
-                  orientation="horizontal"
-                />
-              </div>
-            </div>
-          )
-        : null}
-
-      <div className="flex min-h-0 flex-1">
+      {/*
+        The floating controls anchor to this wrapper rather than the outer box,
+        so the hint strip below stays clear of them.
+      */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
         {showRulers
           ? (
               <div className="
-                shrink-0 overflow-hidden border-r border-border bg-background/70
+                flex shrink-0 border-b border-border bg-background/70
               "
               >
-                <CanvasRuler
-                  lengthMm={doc.heightMm}
-                  pxPerMm={pxPerMm}
-                  orientation="vertical"
+                <div
+                  className="shrink-0 border-r border-border"
+                  style={{ width: RULER_SIZE, height: RULER_SIZE }}
                 />
+                <div className="overflow-hidden">
+                  <CanvasRuler
+                    lengthMm={doc.widthMm}
+                    pxPerMm={pxPerMm}
+                    orientation="horizontal"
+                  />
+                </div>
               </div>
             )
           : null}
 
-        <div ref={surfaceRef} className="min-h-0 flex-1 overflow-auto">
-          <div
-            className="flex items-center justify-center p-8"
-            style={{
-              minWidth: artworkWidth + FIT_PADDING,
-              minHeight: artworkHeight + FIT_PADDING,
-            }}
-          >
-            <div className="shadow-xl shadow-black/15">
-              <DocumentCanvas scale={pxPerMm} />
+        <div className="flex min-h-0 flex-1">
+          {showRulers
+            ? (
+                <div className="
+                  shrink-0 overflow-hidden border-r border-border
+                  bg-background/70
+                "
+                >
+                  <CanvasRuler
+                    lengthMm={doc.heightMm}
+                    pxPerMm={pxPerMm}
+                    orientation="vertical"
+                  />
+                </div>
+              )
+            : null}
+
+          <div ref={surfaceRef} className="min-h-0 flex-1 overflow-auto">
+            <div
+              className="flex items-center justify-center p-8"
+              style={{
+                minWidth: artworkWidth + FIT_PADDING,
+                minHeight: artworkHeight + FIT_PADDING,
+              }}
+            >
+              <div className="shadow-xl shadow-black/15">
+                <DocumentCanvas scale={pxPerMm} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <HistoryControls />
+        <HistoryControls />
 
-      {/* Add/delete, in the strip left of the zoom stack — see CanvasToolbar. */}
-      <CanvasToolbar />
+        {/* Add/delete, in the strip left of the zoom stack — see CanvasToolbar. */}
+        <CanvasToolbar />
 
-      {/* Zoom controls, kept out of the scroll surface so they never scroll away. */}
-      <div className="
-        absolute right-3 bottom-3 flex flex-col overflow-hidden rounded-lg
-        border border-border bg-background shadow-md
-      "
-      >
-        <button
-          type="button"
-          onClick={() => zoomBy(ZOOM_STEP)}
-          aria-label={t('zoom_in')}
-          className="
-            cursor-pointer p-1.5 transition-colors
-            hover:bg-accent
-          "
-        >
-          <PlusIcon className="size-4" />
-        </button>
-        <span className="
-          border-y border-border px-1.5 py-1 text-center text-[10px]
-          tabular-nums
+        {/* Zoom controls, kept out of the scroll surface so they never scroll away. */}
+        <div className="
+          absolute right-3 bottom-3 flex flex-col overflow-hidden rounded-lg
+          border border-border bg-background shadow-md
         "
         >
-          {Math.round(zoom * 100)}
-          %
-        </span>
-        <button
-          type="button"
-          onClick={() => zoomBy(1 / ZOOM_STEP)}
-          aria-label={t('zoom_out')}
-          className="
-            cursor-pointer p-1.5 transition-colors
-            hover:bg-accent
+          <button
+            type="button"
+            onClick={() => zoomBy(ZOOM_STEP)}
+            aria-label={t('zoom_in')}
+            className="
+              cursor-pointer p-1.5 transition-colors
+              hover:bg-accent
+            "
+          >
+            <PlusIcon className="size-4" />
+          </button>
+          <span className="
+            border-y border-border px-1.5 py-1 text-center text-[10px]
+            tabular-nums
           "
-        >
-          <MinusIcon className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={requestFit}
-          aria-label={t('zoom_fit')}
-          className="
-            cursor-pointer border-t border-border p-1.5 text-[10px]
-            transition-colors
-            hover:bg-accent
-          "
-        >
-          {t('zoom_fit_short')}
-        </button>
+          >
+            {Math.round(zoom * 100)}
+            %
+          </span>
+          <button
+            type="button"
+            onClick={() => zoomBy(1 / ZOOM_STEP)}
+            aria-label={t('zoom_out')}
+            className="
+              cursor-pointer p-1.5 transition-colors
+              hover:bg-accent
+            "
+          >
+            <MinusIcon className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={requestFit}
+            aria-label={t('zoom_fit')}
+            className="
+              cursor-pointer border-t border-border p-1.5 text-[10px]
+              transition-colors
+              hover:bg-accent
+            "
+          >
+            {t('zoom_fit_short')}
+          </button>
+        </div>
       </div>
+
+      {/*
+        The usage hint sits inside the box rather than under it, so the
+        workspace and the panel beside it end at exactly the same line.
+      */}
+      <p className="
+        shrink-0 border-t border-border bg-background/70 px-3 py-1.5
+        text-center text-xs text-muted-foreground
+      "
+      >
+        {t('canvas_hint')}
+      </p>
     </div>
   );
 };

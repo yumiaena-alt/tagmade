@@ -2,10 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { StudioShellLoader } from '@/features/studio/StudioShellLoader';
 import { routing } from '@/libs/I18nRouting';
-import { FAQ } from '@/templates/FAQ';
-import { Features } from '@/templates/Features';
 import { Footer } from '@/templates/Footer';
-import { Hero } from '@/templates/Hero';
 import { Navbar } from '@/templates/Navbar';
 import { AllLocales } from '@/utils/AppConfig';
 
@@ -42,17 +39,20 @@ export default async function Index(props: IndexProps) {
   const { locale } = await props.params;
   setRequestLocale(locale);
 
-  const tStudio = await getTranslations({ locale, namespace: 'Studio' });
+  const t = await getTranslations({ locale, namespace: 'Hero' });
 
   return (
     <>
       <Navbar />
 
       {/*
-        The studio sits above the fold so a visitor can pick a template and edit
-        immediately. Its heading and lede are server-rendered because the canvas
-        itself is client-only. Everything below is the existing marketing page,
-        unchanged, which is what keeps this URL worth indexing.
+        The page is the editor: one server-rendered H1 above the studio, and
+        nothing below it. The marketing sections that used to follow were
+        boilerplate copy about the starter kit, not about this product.
+
+        The H1 stays a server component because the studio itself is
+        client-only (`ssr:false`) — without it the URL would have no indexable
+        heading at all.
       */}
       <main>
         {/*
@@ -60,22 +60,23 @@ export default async function Index(props: IndexProps) {
           column is right for marketing copy and far too narrow for an editor —
           it left the canvas smaller than the panels around it.
         */}
-        <div className="px-3 pt-4 pb-12">
-          <header className="mb-4 max-w-2xl">
-            <h1 className="text-3xl font-bold tracking-tight text-balance">
-              {tStudio('page_heading')}
-            </h1>
-            <p className="mt-2 text-base/relaxed text-muted-foreground">
-              {tStudio('page_lede')}
-            </p>
-          </header>
+        <div className="px-3 pt-4 pb-6">
+          <h1 className="mb-3 text-2xl font-bold tracking-tight text-balance">
+            {t.rich('title', {
+              important: chunks => (
+                <span className="
+                  bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500
+                  bg-clip-text text-transparent
+                "
+                >
+                  {chunks}
+                </span>
+              ),
+            })}
+          </h1>
 
           <StudioShellLoader />
         </div>
-
-        <Hero />
-        <Features />
-        <FAQ />
       </main>
 
       <Footer />

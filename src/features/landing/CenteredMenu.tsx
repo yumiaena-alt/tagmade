@@ -24,9 +24,15 @@ export const CenteredMenu = (props: {
         <MenuToggle onClick={toggleMenu} />
       </div>
 
+      {/*
+        `lg:ml-auto` pushes the links out of the centre and up against the
+        account controls on the right. With a single product link left, a
+        centred nav read as a stray word floating in the middle of the bar.
+      */}
       <nav className={cn(`
         rounded-t-xl
         max-lg:mt-2
+        lg:ml-auto lg:mr-6
       `, navClass)}
       >
         <ul className="
