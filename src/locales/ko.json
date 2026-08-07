@@ -116,7 +116,15 @@
     "my_templates_empty": "현재 캔버스를 이름 붙여 저장하면 여기에 쌓입니다.",
     "my_template_name_required": "이름을 입력해 주세요.",
     "my_template_too_large": "저장 공간이 찼습니다. 쓰지 않는 템플릿을 지워주세요.",
-    "delete_my_template": "{name} 삭제"
+    "delete_my_template": "{name} 삭제",
+    "library_image_heading": "이미지",
+    "library_care_heading": "세탁 기호 세트",
+    "image_drop_hint": "캔버스에 파일을 끌어다 놓아도 됩니다",
+    "image_not_an_image": "이미지 파일이 아닙니다.",
+    "image_unreadable": "파일을 읽지 못했습니다.",
+    "care_placeholder_note": "표시되는 기호는 자리표시 도형입니다. 실제 인쇄 전에 공인 KS 심볼 파일로 교체하세요.",
+    "panel_rail_label": "패널 선택",
+    "image_drop_here": "놓으면 이 위치에 이미지가 들어갑니다"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

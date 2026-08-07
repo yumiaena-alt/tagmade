@@ -6,9 +6,9 @@ import { useState } from 'react';
 import { CareSummary } from '@/features/label/CareSummary';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { buildCareGuide } from '@/utils/careRules';
-import { ADDABLE_TYPES, elementContent } from '@/utils/documentModel';
+import { elementContent } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
-import { useAddElementLabels } from './useAddElementLabels';
+import { readImageFile } from './imageUpload';
 import { useEditorFieldLabels } from './useEditorFieldLabels';
 
 const CONTROL_CLASS = `
@@ -18,9 +18,6 @@ const CONTROL_CLASS = `
 `;
 
 const ALIGNMENTS: readonly TextAlign[] = ['left', 'center', 'right'];
-
-/** Data URLs live inside the document, so keep uploads small. */
-const MAX_IMAGE_BYTES = 1024 * 1024;
 
 /**
  * Shows what the composition resolves to: the matched tier, the five printed
@@ -42,7 +39,6 @@ const CareSymbolsInspector = ({ composition }: { composition: string }) => {
  */
 export const ElementsPanel = () => {
   const t = useTranslations('Studio');
-  const addLabels = useAddElementLabels();
   const fieldLabels = useEditorFieldLabels();
   const [uploadError, setUploadError] = useState(false);
   const doc = useDocumentStore(state => state.doc);
@@ -50,53 +46,23 @@ export const ElementsPanel = () => {
   const select = useDocumentStore(state => state.select);
   const setElementContent = useDocumentStore(state => state.setElementContent);
   const updateElement = useDocumentStore(state => state.updateElement);
-  const addElement = useDocumentStore(state => state.addElement);
   const removeElement = useDocumentStore(state => state.removeElement);
 
-  const readImageFile = (elementId: string, file: File) => {
-    if (file.size > MAX_IMAGE_BYTES) {
-      setUploadError(true);
+  const applyImageFile = async (elementId: string, file: File) => {
+    const result = await readImageFile(file);
 
-      return;
+    setUploadError(!result.ok);
+
+    if (result.ok) {
+      updateElement(elementId, { src: result.src });
     }
-
-    setUploadError(false);
-
-    const reader = new FileReader();
-
-    reader.onload = () =>
-      updateElement(elementId, { src: String(reader.result ?? '') });
-    reader.readAsDataURL(file);
   };
 
   const selected = doc.elements.find(element => element.id === selectedId);
 
   return (
     <div className="space-y-6">
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium">{t('add_heading')}</h2>
-        <ul className="flex flex-wrap gap-1.5">
-          {ADDABLE_TYPES.map(type => (
-            <li key={type}>
-              <button
-                type="button"
-                onClick={() => addElement(type)}
-                className={`
-                  cursor-pointer rounded-full border border-border px-2.5 py-1
-                  text-xs text-muted-foreground transition-colors
-                  hover:border-foreground/30 hover:bg-accent
-                  hover:text-foreground
-                `}
-              >
-                +
-                {' '}
-                {addLabels[type]}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
+      {/* Adding lives in the library above this panel — see ElementLibrary. */}
       <section className="space-y-2">
         <h2 className="text-sm font-medium">{t('elements_heading')}</h2>
 
@@ -186,7 +152,7 @@ export const ElementsPanel = () => {
                           const file = event.target.files?.[0];
 
                           if (file) {
-                            readImageFile(selected.id, file);
+                            void applyImageFile(selected.id, file);
                           }
                         }}
                         className={`

@@ -1,9 +1,13 @@
 'use client';
 
+import type { IconProps } from '@radix-ui/react-icons/dist/types';
+import type { ComponentType } from 'react';
+import { LayoutIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { cn } from '@/utils/Helpers';
 import { CanvasWorkspace } from './CanvasWorkspace';
+import { ElementLibrary } from './ElementLibrary';
 import { ElementsPanel } from './ElementsPanel';
 import { PagePropertiesBar } from './PagePropertiesBar';
 import { TemplatePanel } from './TemplatePanel';
@@ -12,6 +16,11 @@ import { TextFormatBar } from './TextFormatBar';
 const PANEL_TABS = ['templates', 'elements'] as const;
 
 type PanelTab = typeof PANEL_TABS[number];
+
+const TAB_ICONS: Record<PanelTab, ComponentType<IconProps>> = {
+  templates: LayoutIcon,
+  elements: PlusCircledIcon,
+};
 
 /**
  * Editor shell: page properties across the top, the template and layer panels
@@ -55,57 +64,81 @@ export const StudioShell = () => {
         `}
       >
         {/*
-          Left: template browser / layers. One bordered box with the tabs
-          inside it, so it starts and ends on the same lines as the workspace
-          beside it — the tab strip used to sit outside the border and push the
-          panel down by its own height.
+          Left: an icon rail choosing what the panel beside it shows.
+
+          The rail is its own column rather than a strip inside the panel, so
+          the panel is one bordered box that starts and ends on the same lines
+          as the workspace — a tab strip above the border pushed the panel down
+          by its own height and the two columns stopped lining up.
         */}
         <aside
           className={`
-            flex w-[280px] shrink-0 flex-col overflow-hidden rounded-xl border
-            border-border
+            flex shrink-0 gap-2
             max-lg:w-full
           `}
         >
           <div
             role="tablist"
-            aria-label={t('templates_heading')}
+            aria-orientation="vertical"
+            aria-label={t('panel_rail_label')}
             className={`
-              flex shrink-0 gap-1 border-b border-border bg-secondary p-1
+              flex w-14 shrink-0 flex-col gap-1 overflow-hidden rounded-xl
+              border border-border bg-secondary/60 p-1
             `}
           >
-            {PANEL_TABS.map(item => (
-              <button
-                key={item}
-                type="button"
-                role="tab"
-                aria-selected={tab === item}
-                onClick={() => setTab(item)}
-                className={cn(
-                  `
-                    flex-1 cursor-pointer rounded-md px-3 py-1.5 text-sm
-                    transition-colors
-                  `,
-                  tab === item
-                    ? 'bg-background font-medium shadow-xs'
-                    : `
-                      text-muted-foreground
-                      hover:text-foreground
+            {PANEL_TABS.map((item) => {
+              const Icon = TAB_ICONS[item];
+
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === item}
+                  title={tabLabels[item]}
+                  onClick={() => setTab(item)}
+                  className={cn(
+                    `
+                      flex cursor-pointer flex-col items-center gap-0.5
+                      rounded-lg px-1 py-2 text-[10px] transition-colors
                     `,
-                )}
-              >
-                {tabLabels[item]}
-              </button>
-            ))}
+                    tab === item
+                      ? 'bg-background font-medium shadow-xs'
+                      : `
+                        text-muted-foreground
+                        hover:bg-background/60 hover:text-foreground
+                      `,
+                  )}
+                >
+                  <Icon className="size-5" />
+                  {tabLabels[item]}
+                </button>
+              );
+            })}
           </div>
 
           <div
             className={`
-              min-h-0 flex-1 overflow-y-auto p-3
-              max-lg:max-h-[460px]
+              flex w-[268px] min-w-0 flex-col overflow-hidden rounded-xl border
+              border-border
+              max-lg:w-full
             `}
           >
-            {tab === 'templates' ? <TemplatePanel /> : <ElementsPanel />}
+            <div
+              className={`
+                min-h-0 flex-1 overflow-y-auto p-3
+                max-lg:max-h-[460px]
+              `}
+            >
+              {tab === 'templates'
+                ? <TemplatePanel />
+                : (
+                    <div className="space-y-6">
+                      <ElementLibrary />
+                      <ElementsPanel />
+                    </div>
+                  )}
+            </div>
           </div>
         </aside>
 

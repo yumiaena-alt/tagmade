@@ -1,14 +1,16 @@
 'use client';
 
+import type { ImageReadFailure } from './imageUpload';
 import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { PX_PER_MM, useViewStore } from '@/store/useViewStore';
 import { CanvasRuler, RULER_SIZE } from './CanvasRulers';
 import { CanvasToolbar } from './CanvasToolbar';
 import { DocumentCanvas } from './DocumentCanvas';
 import { HistoryControls } from './HistoryControls';
+import { firstImageFile, readImageFile } from './imageUpload';
 
 /** Breathing room around the artwork when fitting it to the viewport. */
 const FIT_PADDING = 64;
@@ -31,6 +33,11 @@ export const CanvasWorkspace = () => {
   const setZoom = useViewStore(state => state.setZoom);
   const zoomBy = useViewStore(state => state.zoomBy);
   const requestFit = useViewStore(state => state.requestFit);
+
+  const addImage = useDocumentStore(state => state.addImage);
+  const [isDropTarget, setIsDropTarget] = useState(false);
+  const [dropFailure, setDropFailure] = useState<ImageReadFailure | null>(null);
+  const artworkRef = useRef<HTMLDivElement>(null);
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   // Measures the surface directly rather than trusting observer state, which
@@ -95,6 +102,50 @@ export const CanvasWorkspace = () => {
   const artworkWidth = doc.widthMm * pxPerMm;
   const artworkHeight = doc.heightMm * pxPerMm;
 
+  const dropFailureMessages: Record<ImageReadFailure, string> = {
+    too_large: t('image_too_large'),
+    not_an_image: t('image_not_an_image'),
+    unreadable: t('image_unreadable'),
+  };
+
+  /**
+   * Drops the file where it was released, converting the pointer position back
+   * through the current zoom — so an image lands under the cursor rather than
+   * at a fixed corner the operator then has to drag it away from.
+   */
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDropTarget(false);
+
+    const file = firstImageFile(event.dataTransfer);
+
+    if (!file) {
+      setDropFailure('not_an_image');
+
+      return;
+    }
+
+    const result = await readImageFile(file);
+
+    if (!result.ok) {
+      setDropFailure(result.reason);
+
+      return;
+    }
+
+    setDropFailure(null);
+
+    const box = artworkRef.current?.getBoundingClientRect();
+    const position = box
+      ? {
+          x: (event.clientX - box.left) / pxPerMm,
+          y: (event.clientY - box.top) / pxPerMm,
+        }
+      : { x: doc.widthMm / 4, y: doc.heightMm / 4 };
+
+    addImage(result.src, position);
+  };
+
   return (
     <div className="
       flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border
@@ -144,7 +195,23 @@ export const CanvasWorkspace = () => {
               )
             : null}
 
-          <div ref={surfaceRef} className="min-h-0 flex-1 overflow-auto">
+          <div
+            ref={surfaceRef}
+            className="relative min-h-0 flex-1 overflow-auto"
+            onDragOver={(event) => {
+              // Without this the browser navigates to the dropped file.
+              event.preventDefault();
+              setIsDropTarget(true);
+            }}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                setIsDropTarget(false);
+              }
+            }}
+            onDrop={(event) => {
+              void handleDrop(event);
+            }}
+          >
             <div
               className="flex items-center justify-center p-8"
               style={{
@@ -152,12 +219,39 @@ export const CanvasWorkspace = () => {
                 minHeight: artworkHeight + FIT_PADDING,
               }}
             >
-              <div className="shadow-xl shadow-black/15">
+              <div ref={artworkRef} className="shadow-xl shadow-black/15">
                 <DocumentCanvas scale={pxPerMm} />
               </div>
             </div>
           </div>
         </div>
+
+        {isDropTarget
+          ? (
+              <div className={`
+                pointer-events-none absolute inset-0 flex items-center
+                justify-center border-2 border-dashed border-foreground/40
+                bg-background/70 text-sm font-medium
+              `}
+              >
+                {t('image_drop_here')}
+              </div>
+            )
+          : null}
+
+        {dropFailure
+          ? (
+              <p
+                role="alert"
+                className={`
+                  absolute top-3 left-3 rounded-md bg-background px-2 py-1
+                  text-xs font-medium text-destructive shadow-md
+                `}
+              >
+                {dropFailureMessages[dropFailure]}
+              </p>
+            )
+          : null}
 
         <HistoryControls />
 

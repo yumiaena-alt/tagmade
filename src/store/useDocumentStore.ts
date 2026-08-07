@@ -10,7 +10,7 @@
 import type { AddableType, DocElement, LabelDocument } from '@/utils/documentModel';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { withContent } from '@/utils/documentModel';
+import { clampElement, withContent } from '@/utils/documentModel';
 import { DEFAULT_TEMPLATE_ID, findTemplate } from '@/utils/templateCatalog';
 
 /** Depth of the undo stack. Documents are small, so this is cheap. */
@@ -142,6 +142,15 @@ type DocumentStore = {
   readonly setElementContent: (id: string, content: string) => void;
   readonly moveElement: (id: string, position: { x: number; y: number }) => void;
   readonly addElement: (type: AddableType) => void;
+  /**
+   * Adds an image already read as a data URL, at a point on the page.
+   *
+   * One action rather than add-then-set-src, so a dropped file is a single
+   * undo step and never lands as an empty slot the operator has to fill.
+   */
+  readonly addImage: (src: string, position: { x: number; y: number }) => void;
+  /** Adds a care-symbol block for a composition, at the usual offset. */
+  readonly addCareSymbols: (composition: string) => void;
   readonly removeElement: (id: string) => void;
   readonly resizePage: (widthMm: number, heightMm: number) => void;
   readonly undo: () => void;
@@ -252,6 +261,39 @@ export const useDocumentStore = create<DocumentStore>()(
       addElement: type =>
         set((state) => {
           const element = blankElement(type, state.doc);
+
+          return {
+            ...commit(state, {
+              ...state.doc,
+              elements: [...state.doc.elements, element],
+            }),
+            selectedId: element.id,
+          };
+        }),
+
+      addImage: (src, position) =>
+        set((state) => {
+          const base = blankElement('image', state.doc);
+          // Narrowed rather than cast: `blankElement` returns the union,
+          // and only the image member carries `src`.
+          const element: DocElement
+            = base.type === 'image' ? { ...base, src } : base;
+          const at = clampElement(element, state.doc, position);
+
+          return {
+            ...commit(state, {
+              ...state.doc,
+              elements: [...state.doc.elements, { ...element, ...at }],
+            }),
+            selectedId: element.id,
+          };
+        }),
+
+      addCareSymbols: composition =>
+        set((state) => {
+          const base = blankElement('careSymbols', state.doc);
+          const element: DocElement
+            = base.type === 'careSymbols' ? { ...base, composition } : base;
 
           return {
             ...commit(state, {

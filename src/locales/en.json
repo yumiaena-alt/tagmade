@@ -116,7 +116,15 @@
     "my_templates_empty": "Save the open canvas under a name and it will appear here.",
     "my_template_name_required": "Please enter a name.",
     "my_template_too_large": "Storage is full. Delete a template you no longer need.",
-    "delete_my_template": "Delete {name}"
+    "delete_my_template": "Delete {name}",
+    "library_image_heading": "Image",
+    "library_care_heading": "Care symbol sets",
+    "image_drop_hint": "or drop a file onto the canvas",
+    "image_not_an_image": "That file is not an image.",
+    "image_unreadable": "The file could not be read.",
+    "care_placeholder_note": "These glyphs are placeholders. Replace them with the official KS symbol set before a real print run.",
+    "panel_rail_label": "Panel",
+    "image_drop_here": "Drop to place the image here"
   },
   "Editor": {
     "loading": "Loading the editor",
