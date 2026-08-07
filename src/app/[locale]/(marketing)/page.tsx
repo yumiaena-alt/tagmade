@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Section } from '@/features/landing/Section';
 import { StudioShellLoader } from '@/features/studio/StudioShellLoader';
 import { routing } from '@/libs/I18nRouting';
-import { DemoBanner } from '@/templates/DemoBanner';
 import { FAQ } from '@/templates/FAQ';
 import { Features } from '@/templates/Features';
 import { Footer } from '@/templates/Footer';
@@ -48,7 +46,6 @@ export default async function Index(props: IndexProps) {
 
   return (
     <>
-      <DemoBanner />
       <Navbar />
 
       {/*
@@ -58,18 +55,23 @@ export default async function Index(props: IndexProps) {
         unchanged, which is what keeps this URL worth indexing.
       */}
       <main>
-        <Section className="pt-6 pb-12">
-          <header className="mb-8 max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight text-balance">
+        {/*
+          Full-bleed rather than inside `Section`, whose centred max-w-5xl
+          column is right for marketing copy and far too narrow for an editor —
+          it left the canvas smaller than the panels around it.
+        */}
+        <div className="px-3 pt-4 pb-12">
+          <header className="mb-4 max-w-2xl">
+            <h1 className="text-3xl font-bold tracking-tight text-balance">
               {tStudio('page_heading')}
             </h1>
-            <p className="mt-4 text-lg/relaxed text-muted-foreground">
+            <p className="mt-2 text-base/relaxed text-muted-foreground">
               {tStudio('page_lede')}
             </p>
           </header>
 
           <StudioShellLoader />
-        </Section>
+        </div>
 
         <Hero />
         <Features />

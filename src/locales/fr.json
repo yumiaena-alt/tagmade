@@ -6,11 +6,7 @@
   "Navbar": {
     "sign_in": "Se connecter",
     "sign_up": "S'inscrire",
-    "product": "Produit",
-    "pricing": "Tarifs",
-    "docs": "Docs",
-    "blog": "Blog",
-    "about": "À propos"
+    "product": "Produit"
   },
   "LocaleSwitcher": {
     "button_label": "Changer de langue"
@@ -71,6 +67,8 @@
     "add_careSymbols": "Symboles",
     "add_qr": "QR code",
     "delete_element": "Supprimer",
+    "toolbar_label": "Barre d'outils des éléments",
+    "add_element": "Ajouter {name}",
     "no_selection": "Cliquez sur un élément du canevas pour modifier ses propriétés ici.",
     "canvas_hint": "Cliquer pour sélectionner · glisser pour déplacer · poignées pour redimensionner · double-clic pour éditer",
     "font_size": "Taille du texte",
@@ -110,7 +108,6 @@
     "height_label": "Hauteur",
     "presets_label": "Formats courants",
     "rulers_label": "Afficher les règles",
-    "export_heading": "Exporter",
     "undo": "Annuler",
     "redo": "Rétablir"
   },

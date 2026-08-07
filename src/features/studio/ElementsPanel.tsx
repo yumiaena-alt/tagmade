@@ -1,6 +1,6 @@
 'use client';
 
-import type { AddableType, TextAlign } from '@/utils/documentModel';
+import type { TextAlign } from '@/utils/documentModel';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { CareSummary } from '@/features/label/CareSummary';
@@ -8,6 +8,7 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import { buildCareGuide } from '@/utils/careRules';
 import { ADDABLE_TYPES, elementContent } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
+import { useAddElementLabels } from './useAddElementLabels';
 import { useEditorFieldLabels } from './useEditorFieldLabels';
 
 const CONTROL_CLASS = `
@@ -41,6 +42,7 @@ const CareSymbolsInspector = ({ composition }: { composition: string }) => {
  */
 export const ElementsPanel = () => {
   const t = useTranslations('Studio');
+  const addLabels = useAddElementLabels();
   const fieldLabels = useEditorFieldLabels();
   const [uploadError, setUploadError] = useState(false);
   const doc = useDocumentStore(state => state.doc);
@@ -50,16 +52,6 @@ export const ElementsPanel = () => {
   const updateElement = useDocumentStore(state => state.updateElement);
   const addElement = useDocumentStore(state => state.addElement);
   const removeElement = useDocumentStore(state => state.removeElement);
-
-  const addLabels: Record<AddableType, string> = {
-    text: t('add_text'),
-    rect: t('add_rect'),
-    divider: t('add_divider'),
-    barcode: t('add_barcode'),
-    careSymbols: t('add_careSymbols'),
-    qr: t('add_qr'),
-    image: t('add_image'),
-  };
 
   const readImageFile = (elementId: string, file: File) => {
     if (file.size > MAX_IMAGE_BYTES) {

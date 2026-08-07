@@ -29,24 +29,13 @@ export const Navbar = () => {
           </>
         )}
       >
+        {/*
+          Pricing, docs, blog and about were boilerplate links that all pointed
+          at /sign-up. Removed rather than hidden: nothing behind them exists
+          yet, and `check:i18n` fails on locale keys nothing reads.
+        */}
         <li>
           <Link href="/">{t('product')}</Link>
-        </li>
-
-        <li>
-          <Link href="/sign-up">{t('pricing')}</Link>
-        </li>
-
-        <li>
-          <Link href="/sign-up">{t('docs')}</Link>
-        </li>
-
-        <li>
-          <Link href="/sign-up">{t('blog')}</Link>
-        </li>
-
-        <li>
-          <Link href="/sign-up">{t('about')}</Link>
         </li>
       </CenteredMenu>
     </Section>

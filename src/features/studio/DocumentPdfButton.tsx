@@ -56,19 +56,21 @@ export const DocumentPdfButton = ({
     }
   };
 
-  return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={handleDownload}
-        disabled={isBuilding}
-        className={cn(buttonVariants({ size: 'lg' }), 'w-full')}
-      >
-        {isBuilding ? t('pdf_building') : t('pdf_download')}
-      </button>
+  const hint = t('pdf_hint', { width: doc.widthMm, height: doc.heightMm });
 
-      <p className="text-xs text-muted-foreground">
-        {t('pdf_hint', { width: doc.widthMm, height: doc.heightMm })}
+  return (
+    <div className="flex items-center gap-2">
+      {/*
+        The size hint is the one thing worth double-checking before a print run,
+        so it stays visible where there is room and falls back to the button's
+        tooltip once the bar gets tight.
+      */}
+      <p className="
+        max-w-56 text-[11px] leading-snug text-muted-foreground
+        max-2xl:hidden
+      "
+      >
+        {hint}
       </p>
 
       {hasError
@@ -78,6 +80,16 @@ export const DocumentPdfButton = ({
             </p>
           )
         : null}
+
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={isBuilding}
+        title={hint}
+        className={cn(buttonVariants(), 'shrink-0')}
+      >
+        {isBuilding ? t('pdf_building') : t('pdf_download')}
+      </button>
     </div>
   );
 };

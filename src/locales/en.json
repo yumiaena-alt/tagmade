@@ -6,11 +6,7 @@
   "Navbar": {
     "sign_in": "Sign in",
     "sign_up": "Sign up",
-    "product": "Product",
-    "pricing": "Pricing",
-    "docs": "Docs",
-    "blog": "Blog",
-    "about": "About"
+    "product": "Product"
   },
   "LocaleSwitcher": {
     "button_label": "Change language"
@@ -71,6 +67,8 @@
     "add_careSymbols": "Care symbols",
     "add_qr": "QR code",
     "delete_element": "Delete selected",
+    "toolbar_label": "Element toolbar",
+    "add_element": "Add {name}",
     "no_selection": "Click an element on the canvas to edit its properties here.",
     "canvas_hint": "Click to select · drag to move · pull handles to resize · double-click text to retype",
     "font_size": "Font size",
@@ -110,7 +108,6 @@
     "height_label": "Height",
     "presets_label": "Common sizes",
     "rulers_label": "Show rulers",
-    "export_heading": "Export",
     "undo": "Undo",
     "redo": "Redo"
   },

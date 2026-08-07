@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { PX_PER_MM, useViewStore } from '@/store/useViewStore';
 import { CanvasRuler, RULER_SIZE } from './CanvasRulers';
+import { CanvasToolbar } from './CanvasToolbar';
 import { DocumentCanvas } from './DocumentCanvas';
 import { HistoryControls } from './HistoryControls';
 
@@ -153,6 +154,9 @@ export const CanvasWorkspace = () => {
       </div>
 
       <HistoryControls />
+
+      {/* Add/delete, in the strip left of the zoom stack — see CanvasToolbar. */}
+      <CanvasToolbar />
 
       {/* Zoom controls, kept out of the scroll surface so they never scroll away. */}
       <div className="

@@ -6,11 +6,7 @@
   "Navbar": {
     "sign_in": "로그인",
     "sign_up": "회원가입",
-    "product": "라벨 생성기",
-    "pricing": "요금제",
-    "docs": "사용 가이드",
-    "blog": "블로그",
-    "about": "소개"
+    "product": "라벨 생성기"
   },
   "LocaleSwitcher": {
     "button_label": "언어 변경"
@@ -71,6 +67,8 @@
     "add_careSymbols": "세탁 기호",
     "add_qr": "QR코드",
     "delete_element": "선택 요소 삭제",
+    "toolbar_label": "요소 도구모음",
+    "add_element": "{name} 추가",
     "no_selection": "캔버스에서 요소를 클릭하면 여기에 속성이 나타납니다.",
     "canvas_hint": "클릭해 선택 · 드래그로 이동 · 핸들로 크기 조절 · 텍스트는 더블클릭해 바로 수정",
     "font_size": "글자 크기",
@@ -108,9 +106,8 @@
     "page_props_heading": "페이지 속성",
     "width_label": "가로",
     "height_label": "세로",
-    "presets_label": "자주 쓰는 기공",
+    "presets_label": "자주 쓰는 규격",
     "rulers_label": "눈금자 보기",
-    "export_heading": "추출하기",
     "undo": "되돌리기",
     "redo": "다시 실행"
   },
