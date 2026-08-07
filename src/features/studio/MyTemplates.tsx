@@ -3,15 +3,18 @@
 import type { SaveFailure } from '@/store/useUserTemplateStore';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { useUserTemplateStore } from '@/store/useUserTemplateStore';
+import { cn } from '@/utils/Helpers';
 import { DocumentSvg } from './DocumentSvg';
 import { thumbSize } from './templateThumb';
 
 /**
- * The operator's own templates: save the open document under a name, then bring
- * it back later.
+ * The operator's own templates.
+ *
+ * Nothing is saved by hand: `AutoTemplateRecorder` forks a built-in template
+ * into an entry here on the first edit and updates it from then on, so this is
+ * a list of work already kept rather than a thing to remember to do.
  *
  * Sits above the built-in gallery because it is the shorter, more relevant
  * list — a shop reuses its own three layouts far more often than it goes
@@ -22,24 +25,12 @@ export const MyTemplates = () => {
   const doc = useDocumentStore(state => state.doc);
   const loadDocument = useDocumentStore(state => state.loadDocument);
   const templates = useUserTemplateStore(state => state.templates);
-  const saveTemplate = useUserTemplateStore(state => state.saveTemplate);
   const removeTemplate = useUserTemplateStore(state => state.removeTemplate);
-  const [name, setName] = useState('');
-  const [failure, setFailure] = useState<SaveFailure | null>(null);
+  const lastFailure = useUserTemplateStore(state => state.lastFailure);
 
   const failureMessages: Record<SaveFailure, string> = {
     empty_name: t('my_template_name_required'),
     too_large: t('my_template_too_large'),
-  };
-
-  const handleSave = () => {
-    const result = saveTemplate(name, doc);
-
-    setFailure(result.ok ? null : result.reason);
-
-    if (result.ok) {
-      setName('');
-    }
   };
 
   return (
@@ -48,41 +39,14 @@ export const MyTemplates = () => {
         {t('my_templates_heading')}
       </h3>
 
-      <div className="flex gap-1.5">
-        <input
-          value={name}
-          onChange={event => setName(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              handleSave();
-            }
-          }}
-          placeholder={t('my_template_name_placeholder')}
-          aria-label={t('my_template_name_placeholder')}
-          className={`
-            min-w-0 flex-1 rounded-md border border-input bg-background px-2
-            py-1 text-xs shadow-xs transition-colors outline-none
-            focus-visible:border-ring focus-visible:ring-[3px]
-            focus-visible:ring-ring/50
-          `}
-        />
-        <button
-          type="button"
-          onClick={handleSave}
-          className={`
-            shrink-0 cursor-pointer rounded-md border border-border px-2 py-1
-            text-xs transition-colors
-            hover:border-foreground/30 hover:bg-accent
-          `}
-        >
-          {t('save_my_template')}
-        </button>
-      </div>
+      <p className="text-[11px] text-muted-foreground">
+        {t('my_templates_auto_note')}
+      </p>
 
-      {failure
+      {lastFailure
         ? (
             <p role="alert" className="text-xs font-medium text-destructive">
-              {failureMessages[failure]}
+              {failureMessages[lastFailure]}
             </p>
           )
         : null}
@@ -101,16 +65,26 @@ export const MyTemplates = () => {
                   template.document.heightMm,
                 );
 
+                const isOpen = template.id === doc.templateId;
+
                 return (
                   <li key={template.id} className="relative">
                     <button
                       type="button"
                       onClick={() => loadDocument(template.document)}
-                      className={`
-                        flex w-full cursor-pointer flex-col items-center gap-1.5
-                        rounded-lg border border-border p-2 transition-colors
-                        hover:border-foreground/30 hover:bg-accent/60
-                      `}
+                      aria-pressed={isOpen}
+                      className={cn(
+                        `
+                          flex w-full cursor-pointer flex-col items-center
+                          gap-1.5 rounded-lg border p-2 transition-colors
+                        `,
+                        isOpen
+                          ? 'border-foreground bg-accent'
+                          : `
+                            border-border
+                            hover:border-foreground/30 hover:bg-accent/60
+                          `,
+                      )}
                     >
                       <span className={`
                         flex h-[112px] w-full items-center justify-center

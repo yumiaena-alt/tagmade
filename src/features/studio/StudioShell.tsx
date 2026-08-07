@@ -6,6 +6,7 @@ import { LayoutIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { cn } from '@/utils/Helpers';
+import { AutoTemplateRecorder } from './AutoTemplateRecorder';
 import { CanvasWorkspace } from './CanvasWorkspace';
 import { ElementLibrary } from './ElementLibrary';
 import { ElementsPanel } from './ElementsPanel';
@@ -52,6 +53,9 @@ export const StudioShell = () => {
         max-lg:h-auto
       `}
     >
+      {/* Headless: mirrors the open document into 내 템플릿 as it is edited. */}
+      <AutoTemplateRecorder />
+
       <PagePropertiesBar />
 
       {/* Only present while a text element is selected — see TextFormatBar. */}

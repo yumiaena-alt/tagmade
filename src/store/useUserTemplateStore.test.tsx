@@ -1,6 +1,6 @@
 import type { LabelDocument } from '@/utils/documentModel';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useUserTemplateStore } from './useUserTemplateStore';
+import { isUserTemplateId, useUserTemplateStore } from './useUserTemplateStore';
 
 const DOC: LabelDocument = {
   templateId: 'hang-tag-wide',
@@ -40,50 +40,50 @@ function hugeDocument(): LabelDocument {
   };
 }
 
-describe('useUserTemplateStore', () => {
+describe('isUserTemplateId', () => {
+  it('tells this store\'s ids from the built-in template ids', () => {
+    expect(isUserTemplateId('user-abc-1')).toBe(true);
+    expect(isUserTemplateId('hang-tag-wide')).toBe(false);
+  });
+});
+
+describe('recordWorking', () => {
   beforeEach(() => {
     useUserTemplateStore.setState({ templates: [] });
   });
 
-  it('saves the open document under a name', () => {
-    const result = useUserTemplateStore.getState().saveTemplate('행택 A', DOC);
+  it('forks a built-in template into an entry of its own', () => {
+    const result = useUserTemplateStore.getState().recordWorking(DOC, '가로형');
 
     expect(result.ok).toBe(true);
+    expect(result.ok && isUserTemplateId(result.id)).toBe(true);
 
     const [saved] = useUserTemplateStore.getState().templates;
 
-    expect(saved?.name).toBe('행택 A');
+    expect(saved?.name).toBe('가로형');
     expect(saved?.document.widthMm).toBe(90);
-    expect(saved?.document.elements).toHaveLength(1);
   });
 
-  it('stamps the saved document with its own template id', () => {
-    const result = useUserTemplateStore.getState().saveTemplate('행택 A', DOC);
+  it('stamps the entry id and name onto the stored document', () => {
+    const result = useUserTemplateStore.getState().recordWorking(DOC, '가로형');
     const [saved] = useUserTemplateStore.getState().templates;
 
     expect(result.ok && saved?.document.templateId).toBe(
       result.ok ? result.id : null,
     );
+    expect(saved?.document.name).toBe('가로형');
   });
 
-  it('trims the name', () => {
-    useUserTemplateStore.getState().saveTemplate('  여백  ', DOC);
-
-    expect(useUserTemplateStore.getState().templates[0]?.name).toBe('여백');
-  });
-
-  it('refuses a blank name', () => {
-    const result = useUserTemplateStore.getState().saveTemplate('   ', DOC);
-
-    expect(result).toEqual({ ok: false, reason: 'empty_name' });
-    expect(useUserTemplateStore.getState().templates).toHaveLength(0);
-  });
-
-  it('replaces a template saved under the same name', () => {
+  it('updates the same entry instead of forking again', () => {
     const store = useUserTemplateStore.getState();
+    const first = store.recordWorking(DOC, '가로형');
+    const id = first.ok ? first.id : '';
+    const second = store.recordWorking(
+      { ...DOC, templateId: id, widthMm: 60 },
+      '가로형',
+    );
 
-    store.saveTemplate('행택', DOC);
-    store.saveTemplate('행택', { ...DOC, widthMm: 60 });
+    expect(second.ok && second.id).toBe(id);
 
     const { templates } = useUserTemplateStore.getState();
 
@@ -91,38 +91,81 @@ describe('useUserTemplateStore', () => {
     expect(templates[0]?.document.widthMm).toBe(60);
   });
 
-  it('keeps the newest save first', () => {
-    const store = useUserTemplateStore.getState();
+  it('prefers the name carried on the document over the fallback', () => {
+    useUserTemplateStore
+      .getState()
+      .recordWorking({ ...DOC, name: '봄 시즌 행택' }, '가로형');
 
-    store.saveTemplate('첫째', DOC);
-    store.saveTemplate('둘째', DOC);
-
-    expect(useUserTemplateStore.getState().templates.map(item => item.name))
-      .toEqual(['둘째', '첫째']);
+    expect(useUserTemplateStore.getState().templates[0]?.name)
+      .toBe('봄 시즌 행택');
   });
 
-  it('refuses a save that would not fit in storage', () => {
+  it('renames the entry when the document name changes', () => {
+    const store = useUserTemplateStore.getState();
+    const first = store.recordWorking(DOC, '가로형');
+    const id = first.ok ? first.id : '';
+
+    store.recordWorking({ ...DOC, templateId: id, name: '새 이름' }, '가로형');
+
+    const { templates } = useUserTemplateStore.getState();
+
+    expect(templates).toHaveLength(1);
+    expect(templates[0]?.name).toBe('새 이름');
+  });
+
+  it('moves the entry being worked on to the front', () => {
+    const store = useUserTemplateStore.getState();
+    const first = store.recordWorking(DOC, '첫째');
+    const id = first.ok ? first.id : '';
+
+    store.recordWorking({ ...DOC, name: '둘째' }, '둘째');
+    store.recordWorking({ ...DOC, templateId: id, name: '첫째' }, '첫째');
+
+    expect(useUserTemplateStore.getState().templates.map(item => item.name))
+      .toEqual(['첫째', '둘째']);
+  });
+
+  it('trims the name', () => {
+    useUserTemplateStore.getState().recordWorking(DOC, '  여백  ');
+
+    expect(useUserTemplateStore.getState().templates[0]?.name).toBe('여백');
+  });
+
+  it('refuses a blank name', () => {
+    const result = useUserTemplateStore.getState().recordWorking(DOC, '   ');
+
+    expect(result).toEqual({ ok: false, reason: 'empty_name' });
+    expect(useUserTemplateStore.getState().templates).toHaveLength(0);
+  });
+
+  it('refuses a record that would not fit in storage', () => {
     const result = useUserTemplateStore
       .getState()
-      .saveTemplate('거대', hugeDocument());
+      .recordWorking(hugeDocument(), '거대');
 
     expect(result).toEqual({ ok: false, reason: 'too_large' });
     expect(useUserTemplateStore.getState().templates).toHaveLength(0);
   });
 
-  it('keeps what was already saved when a later save is too large', () => {
+  it('keeps what was already recorded when a later one is too large', () => {
     const store = useUserTemplateStore.getState();
 
-    store.saveTemplate('작은 것', DOC);
-    store.saveTemplate('거대', hugeDocument());
+    store.recordWorking(DOC, '작은 것');
+    store.recordWorking(hugeDocument(), '거대');
 
     expect(useUserTemplateStore.getState().templates.map(item => item.name))
       .toEqual(['작은 것']);
   });
+});
+
+describe('removeTemplate', () => {
+  beforeEach(() => {
+    useUserTemplateStore.setState({ templates: [] });
+  });
 
   it('removes a template by id', () => {
     const store = useUserTemplateStore.getState();
-    const result = store.saveTemplate('버릴 것', DOC);
+    const result = store.recordWorking(DOC, '버릴 것');
 
     if (result.ok) {
       store.removeTemplate(result.id);

@@ -40,10 +40,33 @@ type SaveResult
 
 type UserTemplateStore = {
   readonly templates: readonly UserTemplate[];
-  /** Saves the document under `name`, replacing a template of the same name. */
-  readonly saveTemplate: (name: string, doc: LabelDocument) => SaveResult;
+  /**
+   * Why the last record was refused, or null.
+   *
+   * Recording happens by itself, so a refusal has to be visible somewhere or
+   * the operator would believe work was being kept when it was not.
+   */
+  readonly lastFailure: SaveFailure | null;
+  /**
+   * Records the open document.
+   *
+   * The first call for a document creates an entry under `fallbackName` and
+   * returns its id, which the caller stamps onto the document; every call after
+   * that recognises the id and updates that entry in place. So an edit is the
+   * only thing an operator has to do to keep their work — there is no save
+   * button to forget.
+   */
+  readonly recordWorking: (
+    doc: LabelDocument,
+    fallbackName: string,
+  ) => SaveResult;
   readonly removeTemplate: (id: string) => void;
 };
+
+/** True for an id this store minted, as opposed to a built-in template's. */
+export function isUserTemplateId(id: string): boolean {
+  return id.startsWith('user-');
+}
 
 function byteLength(templates: readonly UserTemplate[]): number {
   return new Blob([JSON.stringify(templates)]).size;
@@ -61,34 +84,39 @@ export const useUserTemplateStore = create<UserTemplateStore>()(
   persist(
     (set, get) => ({
       templates: [],
+      lastFailure: null,
 
-      saveTemplate: (name, doc) => {
-        const trimmed = name.trim();
+      recordWorking: (doc, fallbackName) => {
+        const { templates } = get();
+        const existing = templates.find(item => item.id === doc.templateId);
+        const id = existing?.id ?? nextId();
+        const name = (doc.name ?? existing?.name ?? fallbackName).trim();
 
-        if (!trimmed) {
+        if (!name) {
+          set({ lastFailure: 'empty_name' });
+
           return { ok: false, reason: 'empty_name' };
         }
 
-        const id = nextId();
-        const saved: UserTemplate = {
+        const entry: UserTemplate = {
           id,
-          name: trimmed,
+          name,
           savedAt: new Date().toISOString(),
-          // Stamped so the gallery can show which template the canvas came
-          // from, and so re-saving under the same name overwrites cleanly.
-          document: { ...doc, templateId: id },
+          document: { ...doc, templateId: id, name },
         };
 
-        // Same name means the operator is updating that template, not adding a
-        // second one they would then have to tell apart.
-        const rest = get().templates.filter(item => item.name !== trimmed);
-        const next = [saved, ...rest];
+        // The one being worked on goes to the front, so the list reads
+        // newest-touched first.
+        const rest = templates.filter(item => item.id !== id);
+        const next = [entry, ...rest];
 
         if (byteLength(next) > MAX_TOTAL_BYTES) {
+          set({ lastFailure: 'too_large' });
+
           return { ok: false, reason: 'too_large' };
         }
 
-        set({ templates: next });
+        set({ templates: next, lastFailure: null });
 
         return { ok: true, id };
       },
@@ -96,10 +124,14 @@ export const useUserTemplateStore = create<UserTemplateStore>()(
       removeTemplate: id =>
         set(state => ({
           templates: state.templates.filter(item => item.id !== id),
+          // Freeing space is the fix for a full store, so stop warning.
+          lastFailure: null,
         })),
     }),
     {
       name: 'smart-label-user-templates',
+      // A refusal belongs to the session that hit it, not to storage.
+      partialize: state => ({ templates: state.templates }),
       merge: (persisted, current) => {
         const saved = persisted as { templates?: unknown } | undefined;
         const list = saved?.templates;

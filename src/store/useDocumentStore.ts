@@ -161,6 +161,17 @@ type DocumentStore = {
   readonly reorderElement: (id: string, direction: 'forward' | 'backward') => void;
   readonly resizePage: (widthMm: number, heightMm: number) => void;
   readonly setBackground: (color: string) => void;
+  readonly setDocumentName: (name: string) => void;
+  /**
+   * Points the document at the template entry that now records it, and takes
+   * the name that entry was filed under.
+   *
+   * Deliberately outside the history: which entry the canvas is being recorded
+   * into is bookkeeping, not an edit, and undoing a colour change must not
+   * silently detach the document from its own template — nor should undo have
+   * to step back through a name the machine chose.
+   */
+  readonly adoptRecord: (templateId: string, name: string) => void;
   readonly undo: () => void;
   readonly redo: () => void;
 };
@@ -341,6 +352,14 @@ export const useDocumentStore = create<DocumentStore>()(
       setBackground: color =>
         set(state =>
           commit(state, { ...state.doc, backgroundColor: color }, 'background')),
+
+      setDocumentName: name =>
+        set(state => commit(state, { ...state.doc, name }, 'documentName')),
+
+      adoptRecord: (templateId, name) =>
+        set(state => ({
+          doc: { ...state.doc, templateId, name: state.doc.name ?? name },
+        })),
 
       resizePage: (widthMm, heightMm) =>
         set(state =>

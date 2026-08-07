@@ -41,6 +41,7 @@ export const PagePropertiesBar = () => {
   const doc = useDocumentStore(state => state.doc);
   const resizePage = useDocumentStore(state => state.resizePage);
   const setBackground = useDocumentStore(state => state.setBackground);
+  const setDocumentName = useDocumentStore(state => state.setDocumentName);
   const unit = useViewStore(state => state.unit);
   const setUnit = useViewStore(state => state.setUnit);
   const showRulers = useViewStore(state => state.showRulers);
@@ -66,6 +67,26 @@ export const PagePropertiesBar = () => {
         border-border bg-background px-3 py-2
       `}
     >
+      {/*
+        The document's own name, which the recorder fills in on the first edit
+        and the operator can then rewrite. Wider and heavier than the settings
+        below it, because it is the one field that names the whole thing.
+      */}
+      <input
+        value={doc.name ?? ''}
+        placeholder={t('untitled_document')}
+        aria-label={t('document_name')}
+        onChange={event => setDocumentName(event.target.value)}
+        className={`
+          w-full max-w-sm rounded-md border border-transparent bg-transparent
+          px-2 py-1 text-center text-sm font-semibold transition-colors
+          outline-none
+          hover:border-input
+          focus-visible:border-ring focus-visible:ring-[3px]
+          focus-visible:ring-ring/50
+        `}
+      />
+
       <div className="
         flex flex-wrap items-center justify-center gap-x-5 gap-y-2
       "

@@ -145,8 +145,16 @@ export type DocElement
 export type ElementType = DocElement['type'];
 
 export type LabelDocument = {
-  /** Template this document started from, for the gallery's "used" hints. */
+  /**
+   * Which template this document *is*.
+   *
+   * A built-in id until the first edit; from then on the id of the entry in the
+   * operator's own templates, which is what links the canvas to the thing being
+   * auto-recorded.
+   */
   readonly templateId: string;
+  /** Shown in the title field. Auto-named on the first edit, then editable. */
+  readonly name?: string;
   readonly widthMm: number;
   readonly heightMm: number;
   /** Page colour. White when unset, which is what label stock usually is. */

@@ -111,10 +111,7 @@
     "align_center": "가운데 정렬",
     "align_right": "오른쪽 정렬",
     "my_templates_heading": "내 템플릿",
-    "save_my_template": "저장",
-    "my_template_name_placeholder": "현재 작업물 이름",
     "my_templates_empty": "현재 캔버스를 이름 붙여 저장하면 여기에 쌓입니다.",
-    "my_template_name_required": "이름을 입력해 주세요.",
     "my_template_too_large": "저장 공간이 찼습니다. 쓰지 않는 템플릿을 지워주세요.",
     "delete_my_template": "{name} 삭제",
     "library_image_heading": "이미지",
@@ -130,7 +127,11 @@
     "png_hint": "300dpi 이미지로 저장합니다",
     "png_error": "PNG를 만들지 못했습니다.",
     "layer_forward": "앞으로 보내기",
-    "layer_backward": "뒤로 보내기"
+    "layer_backward": "뒤로 보내기",
+    "document_name": "문서 이름",
+    "untitled_document": "제목 없음",
+    "my_templates_auto_note": "편집을 시작하면 자동으로 여기에 기록됩니다.",
+    "my_template_name_required": "이름을 입력해 주세요."
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

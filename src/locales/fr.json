@@ -111,10 +111,7 @@
     "align_center": "Centrer",
     "align_right": "Aligner à droite",
     "my_templates_heading": "Mes modèles",
-    "save_my_template": "Enregistrer",
-    "my_template_name_placeholder": "Nommer cette mise en page",
     "my_templates_empty": "Enregistrez le canevas ouvert sous un nom et il apparaîtra ici.",
-    "my_template_name_required": "Veuillez saisir un nom.",
     "my_template_too_large": "Stockage plein. Supprimez un modèle inutilisé.",
     "delete_my_template": "Supprimer {name}",
     "library_image_heading": "Image",
@@ -130,7 +127,11 @@
     "png_hint": "Enregistre une image 300 ppp",
     "png_error": "Impossible de créer le PNG.",
     "layer_forward": "Avancer",
-    "layer_backward": "Reculer"
+    "layer_backward": "Reculer",
+    "document_name": "Nom du document",
+    "untitled_document": "Sans titre",
+    "my_templates_auto_note": "Toute modification est enregistrée ici automatiquement.",
+    "my_template_name_required": "Veuillez saisir un nom."
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",
