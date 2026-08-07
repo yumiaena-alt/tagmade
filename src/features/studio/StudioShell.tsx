@@ -7,6 +7,7 @@ import { CanvasWorkspace } from './CanvasWorkspace';
 import { ElementsPanel } from './ElementsPanel';
 import { PagePropertiesBar } from './PagePropertiesBar';
 import { TemplatePanel } from './TemplatePanel';
+import { TextFormatBar } from './TextFormatBar';
 
 const PANEL_TABS = ['templates', 'elements'] as const;
 
@@ -43,6 +44,9 @@ export const StudioShell = () => {
       `}
     >
       <PagePropertiesBar />
+
+      {/* Only present while a text element is selected — see TextFormatBar. */}
+      <TextFormatBar />
 
       <div
         className={`

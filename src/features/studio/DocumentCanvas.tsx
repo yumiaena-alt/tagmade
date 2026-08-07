@@ -13,8 +13,9 @@ import {
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { clampElement, elementSize } from '@/utils/documentModel';
+import { clampElement, elementSize, textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
+import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
 
 const INK = '#111111';
@@ -101,19 +102,33 @@ const ElementBody = ({ element, scale, image }: ElementNodeProps) => {
   const mm = (value: number) => value * scale;
 
   switch (element.type) {
-    case 'text':
+    case 'text': {
+      const font = fontById(element.fontId);
+      const isItalic = Boolean(element.italic) && font.hasItalic;
+      const decorations = [
+        element.underline ? 'underline' : null,
+        element.strike ? 'line-through' : null,
+      ].filter(Boolean).join(' ');
+
       return (
         <Text
-          text={element.text}
+          text={textLines(element).join('\n')}
           width={mm(element.width)}
           align={element.align ?? 'left'}
           fontSize={mm(element.fontSize)}
-          fontStyle={element.bold ? 'bold' : 'normal'}
-          fontFamily={FONT}
+          fontStyle={
+            [element.bold ? 'bold' : null, isItalic ? 'italic' : null]
+              .filter(Boolean)
+              .join(' ') || 'normal'
+          }
+          textDecoration={decorations}
+          letterSpacing={mm(element.letterSpacing ?? 0)}
+          fontFamily={font.cssStack}
           lineHeight={element.lineHeight ?? 1.35}
-          fill={element.muted ? MUTED_INK : INK}
+          fill={element.color ?? (element.muted ? MUTED_INK : INK)}
         />
       );
+    }
 
     case 'rect':
       return (

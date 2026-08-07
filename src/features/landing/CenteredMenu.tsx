@@ -32,7 +32,7 @@ export const CenteredMenu = (props: {
       <nav className={cn(`
         rounded-t-xl
         max-lg:mt-2
-        lg:ml-auto lg:mr-6
+        lg:mr-6 lg:ml-auto
       `, navClass)}
       >
         <ul className="

@@ -9,6 +9,8 @@
  * All geometry is in millimetres, so every renderer only differs by its scale.
  */
 
+import type { FontId } from './fonts';
+
 /** Caption shown in the layer list, resolved from the `Editor` namespace. */
 type ElementLabelKey
   = | 'field_brand'
@@ -49,6 +51,12 @@ type ElementBase = {
 
 export type TextAlign = 'left' | 'center' | 'right';
 
+/** Applied at render time; the stored text keeps whatever was typed. */
+export type TextCase = 'none' | 'upper' | 'lower';
+
+/** Bullets or numbers prefixed to each line, again only at render time. */
+export type TextList = 'none' | 'bullet' | 'number';
+
 type TextElement = ElementBase & {
   readonly type: 'text';
   readonly text: string;
@@ -58,6 +66,16 @@ type TextElement = ElementBase & {
   readonly align?: TextAlign;
   readonly muted?: boolean;
   readonly lineHeight?: number;
+  readonly fontId?: FontId;
+  /** Hex colour. Falls back to the document ink, or the muted ink. */
+  readonly color?: string;
+  readonly italic?: boolean;
+  readonly underline?: boolean;
+  readonly strike?: boolean;
+  readonly textCase?: TextCase;
+  readonly list?: TextList;
+  /** Extra space between characters, in millimetres. */
+  readonly letterSpacing?: number;
 };
 
 type RectElement = ElementBase & {
@@ -193,6 +211,39 @@ export function clampElement(
     x: Math.min(Math.max(position.x, 0), Math.max(0, doc.widthMm - width)),
     y: Math.min(Math.max(position.y, 0), Math.max(0, doc.heightMm - height)),
   };
+}
+
+/**
+ * The lines a text element actually draws: case folding and list markers
+ * applied, the stored text left untouched.
+ *
+ * Shared by all three renderers. Doing it here rather than three times is the
+ * only way the thumbnail, the canvas and the PDF can be relied on to agree —
+ * a list marker that exists in two of them is a printing bug.
+ */
+export function textLines(element: {
+  readonly text: string;
+  readonly textCase?: TextCase;
+  readonly list?: TextList;
+}): readonly string[] {
+  const cased
+    = element.textCase === 'upper'
+      ? element.text.toUpperCase()
+      : element.textCase === 'lower'
+        ? element.text.toLowerCase()
+        : element.text;
+
+  const lines = cased.split('\n');
+
+  if (element.list === 'bullet') {
+    return lines.map(line => `• ${line}`);
+  }
+
+  if (element.list === 'number') {
+    return lines.map((line, index) => `${index + 1}. ${line}`);
+  }
+
+  return lines;
 }
 
 /**

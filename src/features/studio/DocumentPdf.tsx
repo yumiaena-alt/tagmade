@@ -19,9 +19,11 @@ import {
 } from '@/features/label/careSymbolShapes';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
+import { textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
+import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
-import { PDF_FONT_FAMILY, registerPdfFont } from './pdfFont';
+import { PDF_FONT_FAMILY, registerPdfFonts } from './pdfFont';
 
 const INK = '#111111';
 const MUTED_INK = '#5a5a5a';
@@ -99,17 +101,35 @@ const ElementPdf = ({ element }: ElementPdfProps) => {
   };
 
   switch (element.type) {
-    case 'text':
+    case 'text': {
+      const font = fontById(element.fontId);
+      // Spelled out rather than joined, because `@react-pdf` accepts only these
+      // exact strings.
+      const decoration = element.underline && element.strike
+        ? 'underline line-through'
+        : element.underline
+          ? 'underline'
+          : element.strike
+            ? 'line-through'
+            : 'none';
+
       return (
         <View style={{ ...at, width: pt(element.width) }}>
-          {element.text.split('\n').map((line, index) => (
+          {textLines(element).map((line, index) => (
             <Text
               key={line + String(index)}
               style={{
+                fontFamily: font.family,
                 fontSize: pt(element.fontSize),
                 fontWeight: element.bold ? 'bold' : 'normal',
+                // Only ask for a face that exists; @react-pdf throws rather
+                // than falling back when a style is not registered.
+                fontStyle:
+                  element.italic && font.hasItalic ? 'italic' : 'normal',
+                textDecoration: decoration,
+                letterSpacing: pt(element.letterSpacing ?? 0),
                 textAlign: element.align ?? 'left',
-                color: element.muted ? MUTED_INK : INK,
+                color: element.color ?? (element.muted ? MUTED_INK : INK),
                 lineHeight: element.lineHeight ?? 1.35,
               }}
             >
@@ -118,6 +138,7 @@ const ElementPdf = ({ element }: ElementPdfProps) => {
           ))}
         </View>
       );
+    }
 
     case 'rect':
       return (
@@ -293,7 +314,7 @@ type DocumentPdfProps = {
  * exactly the size shown on the canvas.
  */
 export const DocumentPdf = ({ doc, title }: DocumentPdfProps) => {
-  registerPdfFont();
+  registerPdfFonts(doc);
 
   return (
     <Document title={title}>

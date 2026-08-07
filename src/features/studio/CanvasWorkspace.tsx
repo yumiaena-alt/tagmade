@@ -220,8 +220,8 @@ export const CanvasWorkspace = () => {
         workspace and the panel beside it end at exactly the same line.
       */}
       <p className="
-        shrink-0 border-t border-border bg-background/70 px-3 py-1.5
-        text-center text-xs text-muted-foreground
+        shrink-0 border-t border-border bg-background/70 px-3 py-1.5 text-center
+        text-xs text-muted-foreground
       "
       >
         {t('canvas_hint')}

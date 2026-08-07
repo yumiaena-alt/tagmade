@@ -7,7 +7,9 @@ import {
 } from '@/features/label/careSymbolShapes';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
+import { textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
+import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
 
 const INK = '#111111';
@@ -92,17 +94,27 @@ function ElementSvg({ element }: { element: DocElement }) {
             ? element.x + element.width
             : element.x;
 
+      const font = fontById(element.fontId);
+      const decorations = [
+        element.underline ? 'underline' : null,
+        element.strike ? 'line-through' : null,
+      ].filter(Boolean).join(' ');
+
       return (
         <text
           x={anchorX}
           y={element.y}
           textAnchor={anchor}
           dominantBaseline="hanging"
+          fontFamily={font.cssStack}
           fontSize={element.fontSize}
           fontWeight={element.bold ? 700 : 400}
-          fill={element.muted ? MUTED_INK : INK}
+          fontStyle={element.italic && font.hasItalic ? 'italic' : 'normal'}
+          textDecoration={decorations || undefined}
+          letterSpacing={element.letterSpacing || undefined}
+          fill={element.color ?? (element.muted ? MUTED_INK : INK)}
         >
-          {element.text.split('\n').map((line, index) => (
+          {textLines(element).map((line, index) => (
             <tspan
               key={line + String(index)}
               x={anchorX}

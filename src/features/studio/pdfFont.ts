@@ -1,34 +1,53 @@
+import type { LabelDocument } from '@/utils/documentModel';
+import type { FontFace, FontId } from '@/utils/fonts';
 import { Font } from '@react-pdf/renderer';
+import { DEFAULT_FONT_ID, fontById } from '@/utils/fonts';
 
-export const PDF_FONT_FAMILY = 'NanumGothic';
+/** Family every page falls back to, and the one Korean text needs. */
+export const PDF_FONT_FAMILY = fontById(DEFAULT_FONT_ID).family;
 
-let registered = false;
+const registered = new Set<FontId>();
 
-/**
- * Registers the Korean face the PDF needs.
- *
- * The fonts bundled with `@react-pdf/renderer` (Helvetica and friends) have no
- * Hangul coverage, so without this every Korean glyph exports blank. Both files
- * are OFL-licensed and served from `public/fonts`.
- *
- * Guarded because `Font.register` is global and the studio can build many PDFs
- * in one session.
- */
-export function registerPdfFont(): void {
-  if (registered) {
+function register(font: FontFace): void {
+  if (registered.has(font.id)) {
     return;
   }
 
   Font.register({
-    family: PDF_FONT_FAMILY,
-    fonts: [
-      { src: '/fonts/NanumGothic-Regular.ttf', fontWeight: 'normal' },
-      { src: '/fonts/NanumGothic-Bold.ttf', fontWeight: 'bold' },
-    ],
+    family: font.family,
+    fonts: font.files.map(file => ({
+      src: file.src,
+      fontWeight: file.weight,
+      fontStyle: file.style,
+    })),
   });
+
+  registered.add(font.id);
+}
+
+/**
+ * Registers the faces this document actually uses.
+ *
+ * The fonts bundled with `@react-pdf/renderer` (Helvetica and friends) have no
+ * Hangul coverage, so without registration every Korean glyph exports blank.
+ *
+ * Only the families in use are registered, because each Korean face is a couple
+ * of megabytes and embedding all of them would put that weight into every PDF
+ * regardless of what the label is set in. The default family always goes in —
+ * it is the page-level fallback.
+ *
+ * Guarded per family because `Font.register` is global and the studio can build
+ * many PDFs in one session.
+ */
+export function registerPdfFonts(doc: LabelDocument): void {
+  register(fontById(DEFAULT_FONT_ID));
+
+  for (const element of doc.elements) {
+    if (element.type === 'text') {
+      register(fontById(element.fontId));
+    }
+  }
 
   // Korean has no hyphenation; without this every wrapped word is broken up.
   Font.registerHyphenationCallback(word => [word]);
-
-  registered = true;
 }
