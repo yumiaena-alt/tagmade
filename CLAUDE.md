@@ -33,6 +33,8 @@ const names: Record<Mode, string> = { a: t('name_a'), b: t('name_b') };
   `DocumentPdf` 세 곳에 case → `useDocumentStore`의 `blankElement` 기본값 →
   `Editor` 네임스페이스에 라벨 키 → `useEditorFieldLabels`에 한 줄. 세 렌더러 중
   하나를 빠뜨리면 조용히 안 그려집니다.
+  `ADDABLE_TYPES`에도 넣는다면 `useAddElementLabels`(이름)와 `CanvasToolbar`의
+  `ADD_ICONS`(아이콘) 두 레코드가 타입으로 강제되므로 함께 채워야 컴파일됩니다.
 - **템플릿 추가**: `templateCatalog.ts` 데이터 + `Studio` 네임스페이스 이름 키 +
   `TemplatePanel`의 `templateNames` 한 줄. 렌더러는 건드리지 않습니다.
 - **문서 변경 액션 추가**: `useDocumentStore`의 `commit` 헬퍼를 지나게 하세요.
