@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { fontById, FONTS } from '@/utils/fonts';
 import { cn } from '@/utils/Helpers';
+import { BarGroup, ColorField } from './barControls';
 
 const FIELD_CLASS = `
   rounded-md border border-input bg-background px-1.5 py-1 text-xs
@@ -54,7 +55,7 @@ const Toggle = ({ pressed, disabled, label, onClick, children }: ToggleProps) =>
     aria-label={label}
     title={label}
     className={cn(
-      'rounded-md p-1.5 transition-colors',
+      'rounded-md p-2 transition-colors',
       disabled
         ? 'cursor-not-allowed text-muted-foreground/40'
         : `
@@ -66,10 +67,6 @@ const Toggle = ({ pressed, disabled, label, onClick, children }: ToggleProps) =>
   >
     {children}
   </button>
-);
-
-const Divider = () => (
-  <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-border" />
 );
 
 /**
@@ -150,170 +147,163 @@ export const TextFormatBar = () => {
       role="toolbar"
       aria-label={t('text_format_label')}
       className={`
-        flex shrink-0 flex-wrap items-center gap-1 rounded-xl border
-        border-border bg-background px-2 py-1.5
+        flex shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-2
+        rounded-xl border border-border bg-background px-3 py-2
       `}
     >
-      <select
-        aria-label={t('font_family')}
-        title={t('font_family')}
-        value={font.id}
-        onChange={event => patch({ fontId: event.target.value as FontId })}
-        className={cn(FIELD_CLASS, 'w-32 cursor-pointer')}
-      >
-        {FONTS.map(item => (
-          <option key={item.id} value={item.id}>
-            {item.label}
-          </option>
-        ))}
-      </select>
+      <BarGroup>
+        <select
+          aria-label={t('font_family')}
+          title={t('font_family')}
+          value={font.id}
+          onChange={event => patch({ fontId: event.target.value as FontId })}
+          className={cn(FIELD_CLASS, 'w-32 cursor-pointer')}
+        >
+          {FONTS.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
 
-      <input
-        type="number"
-        aria-label={t('font_size')}
-        title={t('font_size')}
-        value={element.fontSize}
-        min={0.5}
-        step={0.2}
-        onChange={event =>
-          patch({ fontSize: Number(event.target.value) || element.fontSize })}
-        className={cn(FIELD_CLASS, 'w-16 tabular-nums')}
-      />
-
-      <label
-        title={t('font_color')}
-        className={`
-          flex cursor-pointer items-center rounded-md border border-input p-1
-          transition-colors
-          hover:bg-accent
-        `}
-      >
-        <span className="sr-only">{t('font_color')}</span>
         <input
-          type="color"
-          value={element.color ?? '#111111'}
-          onChange={event => patch({ color: event.target.value })}
-          className="size-4 cursor-pointer border-0 bg-transparent p-0"
+          type="number"
+          aria-label={t('font_size')}
+          title={t('font_size')}
+          value={element.fontSize}
+          min={0.5}
+          step={0.2}
+          onChange={event =>
+            patch({ fontSize: Number(event.target.value) || element.fontSize })}
+          className={cn(FIELD_CLASS, 'w-16 tabular-nums')}
         />
-      </label>
 
-      <Divider />
+        <ColorField
+          label={t('font_color')}
+          value={element.color ?? '#111111'}
+          onChange={color => patch({ color })}
+        />
+      </BarGroup>
 
-      <Toggle
-        pressed={Boolean(element.bold)}
-        label={t('bold')}
-        onClick={() => patch({ bold: !element.bold })}
-      >
-        <FontBoldIcon className="size-4" />
-      </Toggle>
+      <BarGroup>
 
-      <Toggle
-        pressed={Boolean(element.italic)}
-        // A family with no italic face would export upright however the canvas
-        // fakes it, so the control says so instead of lying.
-        disabled={!font.hasItalic}
-        label={font.hasItalic ? t('italic') : t('italic_unavailable')}
-        onClick={() => patch({ italic: !element.italic })}
-      >
-        <FontItalicIcon className="size-4" />
-      </Toggle>
-
-      <Toggle
-        pressed={Boolean(element.underline)}
-        label={t('underline')}
-        onClick={() => patch({ underline: !element.underline })}
-      >
-        <UnderlineIcon className="size-4" />
-      </Toggle>
-
-      <Toggle
-        pressed={Boolean(element.strike)}
-        label={t('strikethrough')}
-        onClick={() => patch({ strike: !element.strike })}
-      >
-        <StrikethroughIcon className="size-4" />
-      </Toggle>
-
-      <Toggle
-        pressed={textCase !== 'none'}
-        label={`${t('text_case')}: ${caseLabels[textCase]}`}
-        onClick={() => patch({ textCase: cycle(CASE_ORDER, textCase) })}
-      >
-        <LetterCaseCapitalizeIcon className="size-4" />
-      </Toggle>
-
-      <Divider />
-
-      {ALIGNMENTS.map(item => (
         <Toggle
-          key={item.value}
-          pressed={(element.align ?? 'left') === item.value}
-          label={alignLabels[item.value]}
-          onClick={() => patch({ align: item.value })}
+          pressed={Boolean(element.bold)}
+          label={t('bold')}
+          onClick={() => patch({ bold: !element.bold })}
         >
-          {item.icon}
-        </Toggle>
-      ))}
-
-      <Toggle
-        pressed={list !== 'none'}
-        label={`${t('text_list')}: ${listLabels[list]}`}
-        onClick={() => patch({ list: cycle(LIST_ORDER, list) })}
-      >
-        <ListBulletIcon className="size-4" />
-      </Toggle>
-
-      <div ref={spacingRef} className="relative">
-        <Toggle
-          pressed={spacingOpen}
-          label={t('text_spacing')}
-          onClick={() => setSpacingOpen(open => !open)}
-        >
-          <LetterSpacingIcon className="size-4" />
+          <FontBoldIcon className="size-4" />
         </Toggle>
 
-        {spacingOpen
-          ? (
-              <div className={`
-                absolute top-full left-0 z-10 mt-1 w-52 space-y-2 rounded-lg
-                border border-border bg-background p-2 shadow-md
-              `}
-              >
-                <label className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {t('letter_spacing')}
-                  </span>
-                  <input
-                    type="number"
-                    value={element.letterSpacing ?? 0}
-                    step={0.05}
-                    onChange={event =>
-                      patch({ letterSpacing: Number(event.target.value) || 0 })}
-                    className={cn(FIELD_CLASS, 'w-20 tabular-nums')}
-                  />
-                </label>
+        <Toggle
+          pressed={Boolean(element.italic)}
+          // A family with no italic face would export upright however the canvas
+          // fakes it, so the control says so instead of lying.
+          disabled={!font.hasItalic}
+          label={font.hasItalic ? t('italic') : t('italic_unavailable')}
+          onClick={() => patch({ italic: !element.italic })}
+        >
+          <FontItalicIcon className="size-4" />
+        </Toggle>
 
-                <label className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {t('line_height')}
-                  </span>
-                  <input
-                    type="number"
-                    value={element.lineHeight ?? 1.35}
-                    min={0.8}
-                    step={0.05}
-                    onChange={event =>
-                      patch({
-                        lineHeight:
+        <Toggle
+          pressed={Boolean(element.underline)}
+          label={t('underline')}
+          onClick={() => patch({ underline: !element.underline })}
+        >
+          <UnderlineIcon className="size-4" />
+        </Toggle>
+
+        <Toggle
+          pressed={Boolean(element.strike)}
+          label={t('strikethrough')}
+          onClick={() => patch({ strike: !element.strike })}
+        >
+          <StrikethroughIcon className="size-4" />
+        </Toggle>
+
+        <Toggle
+          pressed={textCase !== 'none'}
+          label={`${t('text_case')}: ${caseLabels[textCase]}`}
+          onClick={() => patch({ textCase: cycle(CASE_ORDER, textCase) })}
+        >
+          <LetterCaseCapitalizeIcon className="size-4" />
+        </Toggle>
+
+      </BarGroup>
+
+      <BarGroup>
+        {ALIGNMENTS.map(item => (
+          <Toggle
+            key={item.value}
+            pressed={(element.align ?? 'left') === item.value}
+            label={alignLabels[item.value]}
+            onClick={() => patch({ align: item.value })}
+          >
+            {item.icon}
+          </Toggle>
+        ))}
+
+        <Toggle
+          pressed={list !== 'none'}
+          label={`${t('text_list')}: ${listLabels[list]}`}
+          onClick={() => patch({ list: cycle(LIST_ORDER, list) })}
+        >
+          <ListBulletIcon className="size-4" />
+        </Toggle>
+
+        <div ref={spacingRef} className="relative">
+          <Toggle
+            pressed={spacingOpen}
+            label={t('text_spacing')}
+            onClick={() => setSpacingOpen(open => !open)}
+          >
+            <LetterSpacingIcon className="size-4" />
+          </Toggle>
+
+          {spacingOpen
+            ? (
+                <div className={`
+                  absolute top-full left-0 z-10 mt-1 w-52 space-y-2 rounded-lg
+                  border border-border bg-background p-2 shadow-md
+                `}
+                >
+                  <label className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {t('letter_spacing')}
+                    </span>
+                    <input
+                      type="number"
+                      value={element.letterSpacing ?? 0}
+                      step={0.05}
+                      onChange={event =>
+                        patch({ letterSpacing: Number(event.target.value) || 0 })}
+                      className={cn(FIELD_CLASS, 'w-20 tabular-nums')}
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {t('line_height')}
+                    </span>
+                    <input
+                      type="number"
+                      value={element.lineHeight ?? 1.35}
+                      min={0.8}
+                      step={0.05}
+                      onChange={event =>
+                        patch({
+                          lineHeight:
                           Number(event.target.value) || element.lineHeight || 1.35,
-                      })}
-                    className={cn(FIELD_CLASS, 'w-20 tabular-nums')}
-                  />
-                </label>
-              </div>
-            )
-          : null}
-      </div>
+                        })}
+                      className={cn(FIELD_CLASS, 'w-20 tabular-nums')}
+                    />
+                  </label>
+                </div>
+              )
+            : null}
+        </div>
+      </BarGroup>
     </div>
   );
 };

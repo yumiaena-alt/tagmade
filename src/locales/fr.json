@@ -124,7 +124,13 @@
     "image_unreadable": "Le fichier n'a pas pu être lu.",
     "care_placeholder_note": "Ces glyphes sont des repères. Remplacez-les par le jeu officiel KS avant une impression réelle.",
     "panel_rail_label": "Panneau",
-    "image_drop_here": "Déposez pour placer l'image ici"
+    "image_drop_here": "Déposez pour placer l'image ici",
+    "background_color": "Fond",
+    "png_download": "Image PNG",
+    "png_hint": "Enregistre une image 300 ppp",
+    "png_error": "Impossible de créer le PNG.",
+    "layer_forward": "Avancer",
+    "layer_backward": "Reculer"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

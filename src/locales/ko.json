@@ -124,7 +124,13 @@
     "image_unreadable": "파일을 읽지 못했습니다.",
     "care_placeholder_note": "표시되는 기호는 자리표시 도형입니다. 실제 인쇄 전에 공인 KS 심볼 파일로 교체하세요.",
     "panel_rail_label": "패널 선택",
-    "image_drop_here": "놓으면 이 위치에 이미지가 들어갑니다"
+    "image_drop_here": "놓으면 이 위치에 이미지가 들어갑니다",
+    "background_color": "배경색",
+    "png_download": "PNG 이미지",
+    "png_hint": "300dpi 이미지로 저장합니다",
+    "png_error": "PNG를 만들지 못했습니다.",
+    "layer_forward": "앞으로 보내기",
+    "layer_backward": "뒤로 보내기"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

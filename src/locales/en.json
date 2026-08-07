@@ -124,7 +124,13 @@
     "image_unreadable": "The file could not be read.",
     "care_placeholder_note": "These glyphs are placeholders. Replace them with the official KS symbol set before a real print run.",
     "panel_rail_label": "Panel",
-    "image_drop_here": "Drop to place the image here"
+    "image_drop_here": "Drop to place the image here",
+    "background_color": "Background",
+    "png_download": "PNG image",
+    "png_hint": "Saves a 300dpi image",
+    "png_error": "Could not build the PNG.",
+    "layer_forward": "Bring forward",
+    "layer_backward": "Send backward"
   },
   "Editor": {
     "loading": "Loading the editor",

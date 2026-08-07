@@ -17,6 +17,7 @@ import { clampElement, elementSize, textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
+import { setCanvasStage } from './canvasStage';
 
 const INK = '#111111';
 const MUTED_INK = '#5a5a5a';
@@ -418,6 +419,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   return (
     <div className="relative" style={{ width, height }}>
       <Stage
+        ref={setCanvasStage}
         width={width}
         height={height}
         onMouseDown={(event) => {
@@ -431,7 +433,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
           <Rect
             width={width}
             height={height}
-            fill="#ffffff"
+            fill={doc.backgroundColor ?? '#ffffff'}
             stroke="#d4d4d4"
             strokeWidth={1}
           />

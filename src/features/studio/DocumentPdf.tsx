@@ -321,7 +321,7 @@ export const DocumentPdf = ({ doc, title }: DocumentPdfProps) => {
       <Page
         size={[pt(doc.widthMm), pt(doc.heightMm)]}
         style={{
-          backgroundColor: '#ffffff',
+          backgroundColor: doc.backgroundColor ?? '#ffffff',
           fontFamily: PDF_FONT_FAMILY,
           color: INK,
         }}

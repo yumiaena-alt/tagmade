@@ -152,7 +152,15 @@ type DocumentStore = {
   /** Adds a care-symbol block for a composition, at the usual offset. */
   readonly addCareSymbols: (composition: string) => void;
   readonly removeElement: (id: string) => void;
+  /**
+   * Moves an element one place through the draw order.
+   *
+   * The array *is* the stacking order — later entries paint over earlier
+   * ones — so bringing something forward is a swap with its neighbour.
+   */
+  readonly reorderElement: (id: string, direction: 'forward' | 'backward') => void;
   readonly resizePage: (widthMm: number, heightMm: number) => void;
+  readonly setBackground: (color: string) => void;
   readonly undo: () => void;
   readonly redo: () => void;
 };
@@ -312,6 +320,27 @@ export const useDocumentStore = create<DocumentStore>()(
           }),
           selectedId: state.selectedId === id ? null : state.selectedId,
         })),
+
+      reorderElement: (id, direction) =>
+        set((state) => {
+          const from = state.doc.elements.findIndex(item => item.id === id);
+          const to = direction === 'forward' ? from + 1 : from - 1;
+
+          if (from < 0 || to < 0 || to >= state.doc.elements.length) {
+            return state;
+          }
+
+          const elements = [...state.doc.elements];
+          const [moved] = elements.splice(from, 1);
+
+          elements.splice(to, 0, moved!);
+
+          return commit(state, { ...state.doc, elements });
+        }),
+
+      setBackground: color =>
+        set(state =>
+          commit(state, { ...state.doc, backgroundColor: color }, 'background')),
 
       resizePage: (widthMm, heightMm) =>
         set(state =>

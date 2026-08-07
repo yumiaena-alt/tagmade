@@ -15,6 +15,7 @@ import { qrMatrix, qrRects } from '@/utils/qrMatrix';
 const INK = '#111111';
 const MUTED_INK = '#5a5a5a';
 const GUIDE = '#bdbdbd';
+const PAGE = '#ffffff';
 
 function CareGlyphSvg({ code, x, size }: { code: string; x: number; size: number }) {
   const glyph = CARE_GLYPHS[code];
@@ -317,7 +318,7 @@ export const DocumentSvg = ({
     width={width}
     height={height}
     viewBox={`0 0 ${doc.widthMm} ${doc.heightMm}`}
-    fontFamily='Inter, "Malgun Gothic", sans-serif'
+    fontFamily={fontById(undefined).cssStack}
     aria-hidden="true"
     focusable="false"
   >
@@ -326,7 +327,7 @@ export const DocumentSvg = ({
       y={0}
       width={doc.widthMm}
       height={doc.heightMm}
-      fill="#ffffff"
+      fill={doc.backgroundColor ?? PAGE}
     />
     {doc.elements.map(element => (
       <ElementSvg key={element.id} element={element} />

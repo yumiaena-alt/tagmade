@@ -149,6 +149,8 @@ export type LabelDocument = {
   readonly templateId: string;
   readonly widthMm: number;
   readonly heightMm: number;
+  /** Page colour. White when unset, which is what label stock usually is. */
+  readonly backgroundColor?: string;
   readonly elements: readonly DocElement[];
 };
 

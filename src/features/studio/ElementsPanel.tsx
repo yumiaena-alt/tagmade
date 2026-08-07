@@ -1,6 +1,7 @@
 'use client';
 
 import type { TextAlign } from '@/utils/documentModel';
+import { ArrowDownIcon, ArrowUpIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { CareSummary } from '@/features/label/CareSummary';
@@ -8,6 +9,7 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import { buildCareGuide } from '@/utils/careRules';
 import { elementContent } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
+import { cn } from '@/utils/Helpers';
 import { readImageFile } from './imageUpload';
 import { useEditorFieldLabels } from './useEditorFieldLabels';
 
@@ -18,6 +20,19 @@ const CONTROL_CLASS = `
 `;
 
 const ALIGNMENTS: readonly TextAlign[] = ['left', 'center', 'right'];
+
+/** Shared look for the two stacking-order buttons on a layer row. */
+function layerButtonClass(disabled: boolean): string {
+  return cn(
+    'rounded-sm border border-border p-1 transition-colors',
+    disabled
+      ? 'cursor-not-allowed text-muted-foreground/40'
+      : `
+        cursor-pointer text-muted-foreground
+        hover:bg-accent hover:text-foreground
+      `,
+  );
+}
 
 /**
  * Shows what the composition resolves to: the matched tier, the five printed
@@ -47,6 +62,7 @@ export const ElementsPanel = () => {
   const setElementContent = useDocumentStore(state => state.setElementContent);
   const updateElement = useDocumentStore(state => state.updateElement);
   const removeElement = useDocumentStore(state => state.removeElement);
+  const reorderElement = useDocumentStore(state => state.reorderElement);
 
   const applyImageFile = async (elementId: string, file: File) => {
     const result = await readImageFile(file);
@@ -70,9 +86,12 @@ export const ElementsPanel = () => {
           ? <p className="text-sm text-muted-foreground">{t('no_selection')}</p>
           : (
               <ul className="space-y-2">
-                {doc.elements.map((element) => {
+                {doc.elements.map((element, index) => {
                   const content = elementContent(element);
                   const isSelected = element.id === selectedId;
+                  // The array is the draw order, so the last entry is on top.
+                  const isFront = index === doc.elements.length - 1;
+                  const isBack = index === 0;
 
                   return (
                     <li
@@ -104,6 +123,29 @@ export const ElementsPanel = () => {
                           {Math.round(element.y)}
                         </span>
                       </button>
+
+                      <div className="mb-1.5 flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => reorderElement(element.id, 'forward')}
+                          disabled={isFront}
+                          aria-label={t('layer_forward')}
+                          title={t('layer_forward')}
+                          className={layerButtonClass(isFront)}
+                        >
+                          <ArrowUpIcon className="size-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => reorderElement(element.id, 'backward')}
+                          disabled={isBack}
+                          aria-label={t('layer_backward')}
+                          title={t('layer_backward')}
+                          className={layerButtonClass(isBack)}
+                        >
+                          <ArrowDownIcon className="size-3" />
+                        </button>
+                      </div>
 
                       {content === null
                         ? null

@@ -10,14 +10,10 @@ import {
   useViewStore,
 } from '@/store/useViewStore';
 import { cn } from '@/utils/Helpers';
+import { BarGroup, BarLabel, ColorField, CONTROL_CLASS } from './barControls';
 import { DocumentIo } from './DocumentIo';
 import { DocumentPdfButton } from './DocumentPdfButton';
-
-const CONTROL_CLASS = `
-  w-16 rounded-md border border-input bg-background px-2 py-1 text-sm
-  tabular-nums shadow-xs transition-colors outline-none
-  focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50
-`;
+import { DocumentPngButton } from './DocumentPngButton';
 
 /** Label stock sizes an operator actually reaches for, in millimetres. */
 const SIZE_PRESETS = [
@@ -29,12 +25,12 @@ const SIZE_PRESETS = [
 ] as const;
 
 /**
- * Page geometry, display unit, size presets, rulers and export — as a bar
- * across the top of the studio.
+ * Page geometry, display unit, size presets, background, rulers and export —
+ * as a bar across the top of the studio.
  *
- * These are document-wide settings touched occasionally, so they no longer
- * deserve a permanent column beside the artwork; moving them up here hands that
- * width back to the canvas, which is the surface the operator actually works in.
+ * Centred rather than left-packed: with the export actions on their own row the
+ * bar reads as one strip of settings, and the eye lands on the middle of the
+ * canvas below it instead of being dragged to the left edge.
  *
  * Geometry is stored in millimetres throughout; the unit here is purely a
  * display choice, converted on the way in and out. That keeps print sizing exact
@@ -44,6 +40,7 @@ export const PagePropertiesBar = () => {
   const t = useTranslations('Studio');
   const doc = useDocumentStore(state => state.doc);
   const resizePage = useDocumentStore(state => state.resizePage);
+  const setBackground = useDocumentStore(state => state.setBackground);
   const unit = useViewStore(state => state.unit);
   const setUnit = useViewStore(state => state.setUnit);
   const showRulers = useViewStore(state => state.showRulers);
@@ -65,125 +62,140 @@ export const PagePropertiesBar = () => {
     <div
       aria-label={t('page_props_heading')}
       className={`
-        flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border
+        flex shrink-0 flex-col items-center gap-2 rounded-xl border
         border-border bg-background px-3 py-2
       `}
     >
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">
-            {t('width_label')}
-          </span>
-          <input
-            type="number"
-            className={CONTROL_CLASS}
-            value={fromMm(doc.widthMm, unit)}
-            min={1}
-            step={unit === 'inch' ? 0.1 : 1}
-            onChange={event =>
-              applySize(
-                toMm(Number(event.target.value) || 0, unit) || doc.widthMm,
-                doc.heightMm,
-              )}
-          />
-        </label>
-
-        <label className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">
-            {t('height_label')}
-          </span>
-          <input
-            type="number"
-            className={CONTROL_CLASS}
-            value={fromMm(doc.heightMm, unit)}
-            min={1}
-            step={unit === 'inch' ? 0.1 : 1}
-            onChange={event =>
-              applySize(
-                doc.widthMm,
-                toMm(Number(event.target.value) || 0, unit) || doc.heightMm,
-              )}
-          />
-        </label>
-      </div>
-
-      <div className="flex gap-1 rounded-lg bg-secondary p-1">
-        {DISPLAY_UNITS.map(item => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setUnit(item)}
-            aria-pressed={unit === item}
-            className={cn(
-              'cursor-pointer rounded-md px-2 py-0.5 text-xs transition-colors',
-              unit === item
-                ? 'bg-background font-medium shadow-xs'
-                : `
-                  text-muted-foreground
-                  hover:text-foreground
-                `,
-            )}
-          >
-            {unitLabels[item]}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground">
-          {t('presets_label')}
-        </span>
-        <ul className="flex flex-wrap gap-1">
-          {SIZE_PRESETS.map((preset) => {
-            const isActive
-              = Math.abs(doc.widthMm - preset.widthMm) < 0.01
-                && Math.abs(doc.heightMm - preset.heightMm) < 0.01;
-
-            return (
-              <li key={preset.id}>
-                <button
-                  type="button"
-                  onClick={() => applySize(preset.widthMm, preset.heightMm)}
-                  aria-pressed={isActive}
-                  className={cn(
-                    `
-                      cursor-pointer rounded-md border px-2 py-0.5 text-[11px]
-                      tabular-nums transition-colors
-                    `,
-                    isActive
-                      ? 'border-foreground bg-foreground text-background'
-                      : `
-                        border-border text-muted-foreground
-                        hover:text-foreground
-                      `,
-                  )}
-                >
-                  {preset.widthMm}
-                  ×
-                  {preset.heightMm}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={showRulers}
-          onChange={toggleRulers}
-          className="cursor-pointer"
-        />
-        {t('rulers_label')}
-      </label>
-
       <div className="
-        ml-auto flex items-center gap-3
-        max-lg:ml-0 max-lg:w-full
+        flex flex-wrap items-center justify-center gap-x-5 gap-y-2
       "
       >
+        <BarGroup>
+          <label className="flex items-center gap-1.5">
+            <BarLabel>{t('width_label')}</BarLabel>
+            <input
+              type="number"
+              className={CONTROL_CLASS}
+              value={fromMm(doc.widthMm, unit)}
+              min={1}
+              step={unit === 'inch' ? 0.1 : 1}
+              onChange={event =>
+                applySize(
+                  toMm(Number(event.target.value) || 0, unit) || doc.widthMm,
+                  doc.heightMm,
+                )}
+            />
+          </label>
+
+          <label className="flex items-center gap-1.5">
+            <BarLabel>{t('height_label')}</BarLabel>
+            <input
+              type="number"
+              className={CONTROL_CLASS}
+              value={fromMm(doc.heightMm, unit)}
+              min={1}
+              step={unit === 'inch' ? 0.1 : 1}
+              onChange={event =>
+                applySize(
+                  doc.widthMm,
+                  toMm(Number(event.target.value) || 0, unit) || doc.heightMm,
+                )}
+            />
+          </label>
+
+          <div className="flex gap-0.5 rounded-lg bg-secondary p-0.5">
+            {DISPLAY_UNITS.map(item => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setUnit(item)}
+                aria-pressed={unit === item}
+                className={cn(
+                  `
+                    cursor-pointer rounded-md px-2 py-1 text-xs
+                    transition-colors
+                  `,
+                  unit === item
+                    ? 'bg-background font-semibold shadow-xs'
+                    : `
+                      text-muted-foreground
+                      hover:text-foreground
+                    `,
+                )}
+              >
+                {unitLabels[item]}
+              </button>
+            ))}
+          </div>
+        </BarGroup>
+
+        <BarGroup>
+          <BarLabel>{t('presets_label')}</BarLabel>
+          <ul className="flex flex-wrap gap-1">
+            {SIZE_PRESETS.map((preset) => {
+              const isActive
+                = Math.abs(doc.widthMm - preset.widthMm) < 0.01
+                  && Math.abs(doc.heightMm - preset.heightMm) < 0.01;
+
+              return (
+                <li key={preset.id}>
+                  <button
+                    type="button"
+                    onClick={() => applySize(preset.widthMm, preset.heightMm)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      `
+                        cursor-pointer rounded-md border px-2 py-1 text-xs
+                        tabular-nums transition-colors
+                      `,
+                      isActive
+                        ? 'border-foreground bg-foreground text-background'
+                        : `
+                          border-border text-muted-foreground
+                          hover:border-foreground/30 hover:text-foreground
+                        `,
+                    )}
+                  >
+                    {preset.widthMm}
+                    ×
+                    {preset.heightMm}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </BarGroup>
+
+        <BarGroup>
+          <ColorField
+            label={t('background_color')}
+            value={doc.backgroundColor ?? '#ffffff'}
+            onChange={setBackground}
+          />
+
+          <label className={`
+            flex cursor-pointer items-center gap-1.5 text-xs
+            text-muted-foreground
+          `}
+          >
+            <input
+              type="checkbox"
+              checked={showRulers}
+              onChange={toggleRulers}
+              className="cursor-pointer"
+            />
+            {t('rulers_label')}
+          </label>
+        </BarGroup>
+      </div>
+
+      <div className={`
+        flex w-full flex-wrap items-center justify-center gap-3 border-t
+        border-border pt-2
+      `}
+      >
         <DocumentIo />
+        <DocumentPngButton />
         <DocumentPdfButton doc={doc} documentName={doc.templateId} />
       </div>
     </div>
