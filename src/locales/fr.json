@@ -83,7 +83,12 @@
     "presets_label": "Formats courants",
     "rulers_label": "Afficher les règles",
     "undo": "Annuler",
-    "redo": "Rétablir"
+    "redo": "Rétablir",
+    "export_document": "Enregistrer",
+    "import_document": "Ouvrir",
+    "import_error_invalid": "Ce fichier n'est pas du JSON valide.",
+    "import_error_shape": "Ce n'est pas un document d'étiquette.",
+    "import_error_version": "Ce fichier vient d'une version plus récente."
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

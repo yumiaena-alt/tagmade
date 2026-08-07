@@ -129,6 +129,12 @@ type DocumentStore = {
   readonly future: readonly LabelDocument[];
   /** Replaces the document with a template preset. */
   readonly applyTemplate: (templateId: string) => void;
+  /**
+   * Replaces the document with an imported one. Validation belongs to the
+   * caller (`parseDocument`) — by the time it lands here it is already a
+   * document the renderers can draw.
+   */
+  readonly loadDocument: (doc: LabelDocument) => void;
   readonly select: (id: string | null) => void;
   /** Merges a partial change into one element. */
   readonly updateElement: (id: string, patch: Partial<DocElement>) => void;
@@ -206,6 +212,12 @@ export const useDocumentStore = create<DocumentStore>()(
       applyTemplate: templateId =>
         set(state => ({
           ...commit(state, templateDocument(templateId)),
+          selectedId: null,
+        })),
+
+      loadDocument: doc =>
+        set(state => ({
+          ...commit(state, doc),
           selectedId: null,
         })),
 

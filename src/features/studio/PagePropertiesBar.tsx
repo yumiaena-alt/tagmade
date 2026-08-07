@@ -10,6 +10,7 @@ import {
   useViewStore,
 } from '@/store/useViewStore';
 import { cn } from '@/utils/Helpers';
+import { DocumentIo } from './DocumentIo';
 import { DocumentPdfButton } from './DocumentPdfButton';
 
 const CONTROL_CLASS = `
@@ -178,10 +179,11 @@ export const PagePropertiesBar = () => {
       </label>
 
       <div className="
-        ml-auto
+        ml-auto flex items-center gap-3
         max-lg:ml-0 max-lg:w-full
       "
       >
+        <DocumentIo />
         <DocumentPdfButton doc={doc} documentName={doc.templateId} />
       </div>
     </div>

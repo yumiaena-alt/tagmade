@@ -83,7 +83,12 @@
     "presets_label": "Common sizes",
     "rulers_label": "Show rulers",
     "undo": "Undo",
-    "redo": "Redo"
+    "redo": "Redo",
+    "export_document": "Save file",
+    "import_document": "Open file",
+    "import_error_invalid": "That file is not valid JSON.",
+    "import_error_shape": "That is not a label document.",
+    "import_error_version": "That file is from a newer version."
   },
   "Editor": {
     "loading": "Loading the editor",

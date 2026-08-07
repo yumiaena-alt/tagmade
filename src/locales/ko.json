@@ -83,7 +83,12 @@
     "presets_label": "자주 쓰는 규격",
     "rulers_label": "눈금자 보기",
     "undo": "되돌리기",
-    "redo": "다시 실행"
+    "redo": "다시 실행",
+    "export_document": "문서 저장",
+    "import_document": "문서 열기",
+    "import_error_invalid": "JSON 형식이 아닙니다.",
+    "import_error_shape": "라벨 문서 파일이 아닙니다.",
+    "import_error_version": "더 새로운 버전의 파일입니다."
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",
