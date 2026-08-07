@@ -109,7 +109,14 @@
     "line_height": "Line height",
     "align_left": "Align left",
     "align_center": "Align centre",
-    "align_right": "Align right"
+    "align_right": "Align right",
+    "my_templates_heading": "My templates",
+    "save_my_template": "Save",
+    "my_template_name_placeholder": "Name this layout",
+    "my_templates_empty": "Save the open canvas under a name and it will appear here.",
+    "my_template_name_required": "Please enter a name.",
+    "my_template_too_large": "Storage is full. Delete a template you no longer need.",
+    "delete_my_template": "Delete {name}"
   },
   "Editor": {
     "loading": "Loading the editor",

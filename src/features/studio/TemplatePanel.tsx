@@ -8,17 +8,8 @@ import {
   templatesByCategory,
 } from '@/utils/templateCatalog';
 import { DocumentSvg } from './DocumentSvg';
-
-/** Longest thumbnail edge in pixels; the shorter edge follows the page ratio. */
-const THUMB_MAX = 104;
-
-function thumbSize(widthMm: number, heightMm: number) {
-  const ratio = widthMm / heightMm;
-
-  return ratio >= 1
-    ? { width: THUMB_MAX, height: Math.round(THUMB_MAX / ratio) }
-    : { width: Math.round(THUMB_MAX * ratio), height: THUMB_MAX };
-}
+import { MyTemplates } from './MyTemplates';
+import { thumbSize } from './templateThumb';
 
 /**
  * Browsable template list, grouped by category — the studio's equivalent of a
@@ -64,6 +55,8 @@ export const TemplatePanel = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-sm font-medium">{t('templates_heading')}</h2>
+
+      <MyTemplates />
 
       {TEMPLATE_CATEGORIES.map(category => (
         <section key={category} className="space-y-2.5">
