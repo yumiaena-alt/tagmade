@@ -166,7 +166,8 @@
     "field_punch_hole": "타공",
     "field_barcode": "바코드",
     "field_qr": "QR코드",
-    "field_image": "이미지"
+    "field_image": "이미지",
+    "field_kc_mark": "KC 마크"
   },
   "LabelStudio": {
     "summary_heading": "표준화 결과",

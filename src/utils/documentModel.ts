@@ -37,7 +37,8 @@ type ElementLabelKey
     | 'field_punch_hole'
     | 'field_barcode'
     | 'field_qr'
-    | 'field_image';
+    | 'field_image'
+    | 'field_kc_mark';
 
 type ElementBase = {
   readonly id: string;

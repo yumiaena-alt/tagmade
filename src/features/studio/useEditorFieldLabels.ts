@@ -39,5 +39,6 @@ export function useEditorFieldLabels(): Record<string, string> {
     field_barcode: t('field_barcode'),
     field_qr: t('field_qr'),
     field_image: t('field_image'),
+    field_kc_mark: t('field_kc_mark'),
   };
 }

@@ -166,7 +166,8 @@
     "field_punch_hole": "Perforation",
     "field_barcode": "Code-barres",
     "field_qr": "QR code",
-    "field_image": "Image"
+    "field_image": "Image",
+    "field_kc_mark": "Marque KC"
   },
   "LabelStudio": {
     "summary_heading": "Résultat normalisé",

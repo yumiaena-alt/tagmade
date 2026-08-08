@@ -166,7 +166,8 @@
     "field_punch_hole": "Punch hole",
     "field_barcode": "Barcode",
     "field_qr": "QR code",
-    "field_image": "Image"
+    "field_image": "Image",
+    "field_kc_mark": "KC mark"
   },
   "LabelStudio": {
     "summary_heading": "Normalized result",

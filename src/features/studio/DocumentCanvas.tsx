@@ -243,13 +243,32 @@ const ElementBody = ({ element, scale, image }: ElementNodeProps) => {
 
     case 'image':
       return image
-        ? (
-            <KonvaImage
-              image={image}
-              width={mm(element.width)}
-              height={mm(element.height)}
-            />
-          )
+        ? (() => {
+            // Letterboxed inside the box, matching `preserveAspectRatio` in the
+            // thumbnail and `objectFit: contain` in the PDF. Konva stretches by
+            // default, which had the canvas showing a distorted picture that
+            // came out of the printer undistorted — worst of all for the KC
+            // mark, a designated figure that may not be reproportioned.
+            const box = { width: mm(element.width), height: mm(element.height) };
+            const fit = Math.min(
+              box.width / image.naturalWidth,
+              box.height / image.naturalHeight,
+            );
+            const drawn = {
+              width: image.naturalWidth * fit,
+              height: image.naturalHeight * fit,
+            };
+
+            return (
+              <KonvaImage
+                image={image}
+                x={(box.width - drawn.width) / 2}
+                y={(box.height - drawn.height) / 2}
+                width={drawn.width}
+                height={drawn.height}
+              />
+            );
+          })()
         : (
             <Rect
               width={mm(element.width)}

@@ -56,6 +56,40 @@ function text(init: TextInit): DocElement {
   };
 }
 
+/**
+ * The official KC mark artwork, served from `public/`.
+ *
+ * A URL rather than an inline data URL — the one exception to documents being
+ * self-contained. Baking 20KB of base64 into the bundle would load it for every
+ * visitor including those who never open a KC template, and unlike an uploaded
+ * logo this is one fixed file the app ships. A document exported to JSON
+ * therefore refers back to this deployment for the mark.
+ */
+const KC_MARK_SRC = '/kc-mark.png';
+
+/** The supplied file's own pixel ratio. It is not square; never assume. */
+const KC_MARK_RATIO = 449 / 694;
+
+/**
+ * Places the KC mark at a given height.
+ *
+ * Sized from the height alone, so the width always follows the artwork. This is
+ * a registered designated figure and one squeezed to fit a box is no longer the
+ * mark, which is why nothing here accepts a width.
+ */
+function kcMark(x: number, y: number, heightMm: number): DocElement {
+  return {
+    type: 'image',
+    id: 'kc',
+    labelKey: 'field_kc_mark',
+    x,
+    y,
+    width: Math.round(heightMm * KC_MARK_RATIO * 100) / 100,
+    height: heightMm,
+    src: KC_MARK_SRC,
+  };
+}
+
 /** Label rows for the customs declaration templates. */
 function row(
   id: string,
@@ -207,11 +241,10 @@ const KC_MARK_MICRO: FlatDocument = {
   widthMm: 25,
   heightMm: 15,
   elements: [
-    { type: 'rect', id: 'kc', labelKey: 'field_shape', x: 2, y: 3, width: 8, height: 8, dashed: true, radius: 1 },
-    text({ id: 'kc-text', labelKey: 'field_text', x: 2, y: 5.4, width: 8, size: 3.4, text: 'KC', bold: true, align: 'center' }),
-    text({ id: 'cert', labelKey: 'field_certification_number', x: 11.5, y: 3.2, width: 12, size: 1.9, text: 'KC-2026-A0417', bold: true }),
-    text({ id: 'product', labelKey: 'field_product_name', x: 11.5, y: 6.2, width: 12, size: 1.6, text: '코튼 티셔츠', muted: true }),
-    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 11.5, y: 8.8, width: 12, size: 1.4, text: 'BVRI · 베트남', muted: true }),
+    kcMark(2, 3, 9),
+    text({ id: 'cert', labelKey: 'field_certification_number', x: 9.5, y: 3.2, width: 14, size: 1.9, text: 'KC-2026-A0417', bold: true }),
+    text({ id: 'product', labelKey: 'field_product_name', x: 9.5, y: 6.2, width: 14, size: 1.6, text: '코튼 티셔츠', muted: true }),
+    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 9.5, y: 8.8, width: 14, size: 1.4, text: 'BVRI · 베트남', muted: true }),
   ],
 };
 
@@ -220,8 +253,8 @@ const KC_MARK_STACKED: FlatDocument = {
   widthMm: 20,
   heightMm: 24,
   elements: [
-    { type: 'rect', id: 'kc', labelKey: 'field_shape', x: 5.5, y: 2, width: 9, height: 9, dashed: true, radius: 1 },
-    text({ id: 'kc-text', labelKey: 'field_text', x: 5.5, y: 4.6, width: 9, size: 3.8, text: 'KC', bold: true, align: 'center' }),
+    // Centred: (20 - 6.47) / 2.
+    kcMark(6.77, 2, 10),
     text({ id: 'cert', labelKey: 'field_certification_number', x: 2, y: 13, width: 16, size: 1.8, text: 'KC-2026-A0417', bold: true, align: 'center' }),
     text({ id: 'product', labelKey: 'field_product_name', x: 2, y: 16.5, width: 16, size: 1.5, text: '코튼 티셔츠', align: 'center', muted: true }),
     text({ id: 'origin', labelKey: 'field_country_of_origin', x: 2, y: 19.5, width: 16, size: 1.4, text: '베트남', align: 'center', muted: true }),
@@ -364,11 +397,10 @@ const KC_MARK_WIDE: FlatDocument = {
   widthMm: 35,
   heightMm: 12,
   elements: [
-    { type: 'rect', id: 'kc', labelKey: 'field_shape', x: 1.5, y: 2, width: 8, height: 8, dashed: true, radius: 1 },
-    text({ id: 'kc-text', labelKey: 'field_text', x: 1.5, y: 4.2, width: 8, size: 3.2, text: 'KC', bold: true, align: 'center' }),
-    text({ id: 'cert', labelKey: 'field_certification_number', x: 11, y: 2.4, width: 22, size: 1.9, text: 'KC-2026-A0417', bold: true }),
-    text({ id: 'product', labelKey: 'field_product_name', x: 11, y: 5.4, width: 22, size: 1.5, text: '코튼 티셔츠', muted: true }),
-    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 11, y: 7.8, width: 22, size: 1.4, text: 'BVRI · 베트남', muted: true }),
+    kcMark(1.5, 1.5, 9),
+    text({ id: 'cert', labelKey: 'field_certification_number', x: 8.5, y: 2.4, width: 24.5, size: 1.9, text: 'KC-2026-A0417', bold: true }),
+    text({ id: 'product', labelKey: 'field_product_name', x: 8.5, y: 5.4, width: 24.5, size: 1.5, text: '코튼 티셔츠', muted: true }),
+    text({ id: 'origin', labelKey: 'field_country_of_origin', x: 8.5, y: 7.8, width: 24.5, size: 1.4, text: 'BVRI · 베트남', muted: true }),
   ],
 };
 
