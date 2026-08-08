@@ -58,6 +58,7 @@ export const PageStrip = () => {
   const duplicatePage = useDocumentStore(state => state.duplicatePage);
   const removePage = useDocumentStore(state => state.removePage);
   const movePage = useDocumentStore(state => state.movePage);
+  const setPageName = useDocumentStore(state => state.setPageName);
 
   const size = thumbSize(doc.widthMm, doc.heightMm);
   const isOnlyPage = doc.pages.length < 2;
@@ -65,8 +66,8 @@ export const PageStrip = () => {
   return (
     <div
       className={`
-        flex shrink-0 items-center gap-3 border-t border-border
-        bg-background/70 px-2 py-1.5
+        flex shrink-0 items-center gap-3 border-t border-border bg-background/70
+        px-2 py-1.5
       `}
     >
       <span className="shrink-0 text-[11px] text-muted-foreground">
@@ -79,6 +80,12 @@ export const PageStrip = () => {
       >
         {doc.pages.map((page, index) => {
           const isActive = index === activePageIndex;
+          // A named page answers to its name; an unnamed one to its number.
+          const named = page.name?.trim() ?? '';
+          const caption = named || String(index + 1);
+          const label = named
+            ? `${t('page_number', { n: index + 1 })} · ${named}`
+            : t('page_number', { n: index + 1 });
 
           return (
             <li key={page.id} className="shrink-0">
@@ -86,8 +93,8 @@ export const PageStrip = () => {
                 type="button"
                 onClick={() => selectPage(index)}
                 aria-current={isActive}
-                aria-label={t('page_number', { n: index + 1 })}
-                title={t('page_number', { n: index + 1 })}
+                aria-label={label}
+                title={label}
                 className={cn(
                   `
                     flex cursor-pointer flex-col items-center gap-0.5 rounded-md
@@ -108,12 +115,14 @@ export const PageStrip = () => {
                   height={size.height}
                   className="rounded-xs border border-border/70"
                 />
-                <span className={cn(
-                  'text-[10px] tabular-nums',
-                  isActive ? 'font-semibold' : 'text-muted-foreground',
-                )}
+                <span
+                  className={cn(
+                    'block max-w-16 truncate text-[10px]',
+                    named ? '' : 'tabular-nums',
+                    isActive ? 'font-semibold' : 'text-muted-foreground',
+                  )}
                 >
-                  {index + 1}
+                  {caption}
                 </span>
               </button>
             </li>
@@ -140,7 +149,26 @@ export const PageStrip = () => {
         </li>
       </ul>
 
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div className="flex shrink-0 items-center gap-1">
+        {/*
+          One field for the page being looked at, rather than an input inside
+          every card: a thumbnail is as narrow as its page, and a 14px-wide box
+          is not something a name can be typed into.
+        */}
+        <input
+          value={doc.pages[activePageIndex]?.name ?? ''}
+          onChange={event => setPageName(activePageIndex, event.target.value)}
+          placeholder={t('page_number', { n: activePageIndex + 1 })}
+          aria-label={t('page_name')}
+          title={t('page_name')}
+          className={`
+            w-24 rounded-md border border-input bg-background px-2 py-1 text-xs
+            shadow-xs transition-colors outline-none
+            focus-visible:border-ring focus-visible:ring-[3px]
+            focus-visible:ring-ring/50
+          `}
+        />
+
         <button
           type="button"
           onClick={() => movePage(activePageIndex, 'backward')}

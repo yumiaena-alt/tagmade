@@ -155,6 +155,13 @@ export type ElementType = DocElement['type'];
  */
 export type LabelPage = {
   readonly id: string;
+  /**
+   * What the operator calls this page — "앞면", "케어".
+   *
+   * Optional, so every document written before pages had names is still valid
+   * and the strip falls back to the page's number.
+   */
+  readonly name?: string;
   readonly elements: readonly DocElement[];
 };
 

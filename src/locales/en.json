@@ -138,7 +138,8 @@
     "duplicate_page": "Duplicate page",
     "delete_page": "Delete page",
     "move_page_backward": "Move earlier",
-    "move_page_forward": "Move later"
+    "move_page_forward": "Move later",
+    "page_name": "Page name"
   },
   "Editor": {
     "loading": "Loading the editor",

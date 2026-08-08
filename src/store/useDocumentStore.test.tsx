@@ -378,6 +378,44 @@ describe('useDocumentStore', () => {
       expect(store().activePageIndex).toBe(1);
     });
 
+    it('names a page', () => {
+      store().setPageName(0, '앞면');
+
+      expect(store().doc.pages[0]!.name).toBe('앞면');
+    });
+
+    it('keeps a cleared name as an empty one', () => {
+      store().setPageName(0, '앞면');
+      store().setPageName(0, '');
+
+      // Empty rather than absent: the strip reads either as "use the number".
+      expect(store().doc.pages[0]!.name).toBe('');
+    });
+
+    it('names pages independently', () => {
+      store().addPage();
+      store().setPageName(0, '앞면');
+      store().setPageName(1, '뒷면');
+
+      expect(store().doc.pages.map(page => page.name)).toEqual(['앞면', '뒷면']);
+    });
+
+    it('keeps a name with the page it belongs to when the order changes', () => {
+      store().addPage();
+      store().setPageName(0, '앞면');
+      store().setPageName(1, '뒷면');
+      store().movePage(1, 'backward');
+
+      expect(store().doc.pages.map(page => page.name)).toEqual(['뒷면', '앞면']);
+    });
+
+    it('undoes a rename', () => {
+      store().setPageName(0, '앞면');
+      store().undo();
+
+      expect(store().doc.pages[0]!.name).toBeUndefined();
+    });
+
     it('undoes adding a page', () => {
       store().addPage();
       store().undo();

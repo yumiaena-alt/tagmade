@@ -203,6 +203,11 @@ type DocumentStore = {
   readonly removePage: (index: number) => void;
   /** Moves a page one place through the print order. */
   readonly movePage: (index: number, direction: 'forward' | 'backward') => void;
+  /**
+   * Names a page. An empty name is kept as one, so clearing the field puts the
+   * page back to being known by its number.
+   */
+  readonly setPageName: (index: number, name: string) => void;
   readonly setBackground: (color: string) => void;
   readonly setDocumentName: (name: string) => void;
   /**
@@ -498,6 +503,14 @@ export const useDocumentStore = create<DocumentStore>()(
             selectedId: null,
           };
         }),
+
+      setPageName: (index, name) =>
+        set(state =>
+          commit(
+            state,
+            mapPage(state.doc, index, page => ({ ...page, name })),
+            `pageName:${index}`,
+          )),
 
       movePage: (index, direction) =>
         set((state) => {
