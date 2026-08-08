@@ -67,8 +67,15 @@ function text(init: TextInit): DocElement {
  */
 const KC_MARK_SRC = '/kc-mark.png';
 
-/** The supplied file's own pixel ratio. It is not square; never assume. */
-const KC_MARK_RATIO = 449 / 694;
+/**
+ * The supplied file's own pixel ratio. It is not square; never assume.
+ *
+ * Must be updated whenever `kc-mark.png` is replaced, or every placement
+ * silently letterboxes to the wrong shape. The file is 529×816 and carries
+ * 40px of clear space either side and 61px above and below, so the mark itself
+ * occupies 85% of the stated height — a 9mm box prints a 7.65mm mark.
+ */
+const KC_MARK_RATIO = 529 / 816;
 
 /**
  * Places the KC mark at a given height.
@@ -241,7 +248,9 @@ const KC_MARK_MICRO: FlatDocument = {
   widthMm: 25,
   heightMm: 15,
   elements: [
-    kcMark(2, 3, 9),
+    // 10.5 tall so the mark inside the file's clear space still prints at the
+    // ~9mm this layout was drawn around.
+    kcMark(2, 2.5, 10.5),
     text({ id: 'cert', labelKey: 'field_certification_number', x: 9.5, y: 3.2, width: 14, size: 1.9, text: 'KC-2026-A0417', bold: true }),
     text({ id: 'product', labelKey: 'field_product_name', x: 9.5, y: 6.2, width: 14, size: 1.6, text: '코튼 티셔츠', muted: true }),
     text({ id: 'origin', labelKey: 'field_country_of_origin', x: 9.5, y: 8.8, width: 14, size: 1.4, text: 'BVRI · 베트남', muted: true }),
@@ -253,8 +262,8 @@ const KC_MARK_STACKED: FlatDocument = {
   widthMm: 20,
   heightMm: 24,
   elements: [
-    // Centred: (20 - 6.47) / 2.
-    kcMark(6.77, 2, 10),
+    // Centred: (20 - 7) / 2.
+    kcMark(6.5, 1.5, 10.8),
     text({ id: 'cert', labelKey: 'field_certification_number', x: 2, y: 13, width: 16, size: 1.8, text: 'KC-2026-A0417', bold: true, align: 'center' }),
     text({ id: 'product', labelKey: 'field_product_name', x: 2, y: 16.5, width: 16, size: 1.5, text: '코튼 티셔츠', align: 'center', muted: true }),
     text({ id: 'origin', labelKey: 'field_country_of_origin', x: 2, y: 19.5, width: 16, size: 1.4, text: '베트남', align: 'center', muted: true }),
@@ -397,7 +406,7 @@ const KC_MARK_WIDE: FlatDocument = {
   widthMm: 35,
   heightMm: 12,
   elements: [
-    kcMark(1.5, 1.5, 9),
+    kcMark(1.5, 1, 10),
     text({ id: 'cert', labelKey: 'field_certification_number', x: 8.5, y: 2.4, width: 24.5, size: 1.9, text: 'KC-2026-A0417', bold: true }),
     text({ id: 'product', labelKey: 'field_product_name', x: 8.5, y: 5.4, width: 24.5, size: 1.5, text: '코튼 티셔츠', muted: true }),
     text({ id: 'origin', labelKey: 'field_country_of_origin', x: 8.5, y: 7.8, width: 24.5, size: 1.4, text: 'BVRI · 베트남', muted: true }),
