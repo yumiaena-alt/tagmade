@@ -124,14 +124,21 @@
     "image_drop_here": "놓으면 이 위치에 이미지가 들어갑니다",
     "background_color": "배경색",
     "png_download": "PNG 이미지",
-    "png_hint": "300dpi 이미지로 저장합니다",
+    "png_hint": "현재 페이지를 300dpi 이미지로 저장합니다",
     "png_error": "PNG를 만들지 못했습니다.",
     "layer_forward": "앞으로 보내기",
     "layer_backward": "뒤로 보내기",
     "document_name": "문서 이름",
     "untitled_document": "제목 없음",
     "my_templates_auto_note": "편집을 시작하면 자동으로 여기에 기록됩니다.",
-    "my_template_name_required": "이름을 입력해 주세요."
+    "my_template_name_required": "이름을 입력해 주세요.",
+    "pages_label": "페이지",
+    "page_number": "{n}쪽",
+    "add_page": "페이지 추가",
+    "duplicate_page": "페이지 복제",
+    "delete_page": "페이지 삭제",
+    "move_page_backward": "앞으로 이동",
+    "move_page_forward": "뒤로 이동"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

@@ -124,14 +124,21 @@
     "image_drop_here": "Déposez pour placer l'image ici",
     "background_color": "Fond",
     "png_download": "Image PNG",
-    "png_hint": "Enregistre une image 300 ppp",
+    "png_hint": "Enregistre la page courante en image 300 ppp",
     "png_error": "Impossible de créer le PNG.",
     "layer_forward": "Avancer",
     "layer_backward": "Reculer",
     "document_name": "Nom du document",
     "untitled_document": "Sans titre",
     "my_templates_auto_note": "Toute modification est enregistrée ici automatiquement.",
-    "my_template_name_required": "Veuillez saisir un nom."
+    "my_template_name_required": "Veuillez saisir un nom.",
+    "pages_label": "Pages",
+    "page_number": "Page {n}",
+    "add_page": "Ajouter une page",
+    "duplicate_page": "Dupliquer la page",
+    "delete_page": "Supprimer la page",
+    "move_page_backward": "Déplacer avant",
+    "move_page_forward": "Déplacer après"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

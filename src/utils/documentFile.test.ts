@@ -1,4 +1,4 @@
-import type { LabelDocument } from './documentModel';
+import type { DocElement, FlatDocument, LabelDocument } from './documentModel';
 import { describe, expect, it } from 'vitest';
 import {
   documentFileName,
@@ -6,32 +6,42 @@ import {
   serializeDocument,
 } from './documentFile';
 
+const ELEMENTS: readonly DocElement[] = [
+  {
+    type: 'text',
+    id: 'brand',
+    labelKey: 'field_brand',
+    x: 2.5,
+    y: 3,
+    width: 25,
+    fontSize: 4,
+    text: 'BVRI',
+    bold: true,
+  },
+  {
+    type: 'qr',
+    id: 'qr',
+    labelKey: 'field_qr',
+    x: 5,
+    y: 40,
+    url: 'https://example.com',
+    size: 18,
+  },
+];
+
 const DOC: LabelDocument = {
   templateId: 'care-label-standard',
   widthMm: 30,
   heightMm: 70,
-  elements: [
-    {
-      type: 'text',
-      id: 'brand',
-      labelKey: 'field_brand',
-      x: 2.5,
-      y: 3,
-      width: 25,
-      fontSize: 4,
-      text: 'BVRI',
-      bold: true,
-    },
-    {
-      type: 'qr',
-      id: 'qr',
-      labelKey: 'field_qr',
-      x: 5,
-      y: 40,
-      url: 'https://example.com',
-      size: 18,
-    },
-  ],
+  pages: [{ id: 'page-1', elements: ELEMENTS }],
+};
+
+/** How every file written before multi-page looks. */
+const FLAT: FlatDocument = {
+  templateId: 'care-label-standard',
+  widthMm: 30,
+  heightMm: 70,
+  elements: ELEMENTS,
 };
 
 describe('serializeDocument', () => {
@@ -46,7 +56,7 @@ describe('serializeDocument', () => {
     const file = JSON.parse(serializeDocument(DOC));
 
     expect(file.kind).toBe('tagmade.label-document');
-    expect(file.version).toBe(1);
+    expect(file.version).toBe(2);
   });
 });
 
@@ -55,6 +65,21 @@ describe('parseDocument', () => {
     const result = parseDocument(JSON.stringify(DOC));
 
     expect(result.ok).toBe(true);
+  });
+
+  it('reads a file written before multi-page as a one-page document', () => {
+    const version1 = {
+      kind: 'tagmade.label-document',
+      version: 1,
+      savedAt: new Date(0).toISOString(),
+      document: FLAT,
+    };
+
+    const result = parseDocument(JSON.stringify(version1));
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.doc.pages).toHaveLength(1);
+    expect(result.ok && result.doc.pages[0]!.elements).toEqual(ELEMENTS);
   });
 
   it('rejects text that is not JSON', () => {
@@ -71,15 +96,15 @@ describe('parseDocument', () => {
   });
 
   it.each([
-    ['a page with no size', { ...DOC, widthMm: undefined }],
-    ['a page sized zero', { ...DOC, heightMm: 0 }],
-    ['elements that are not an array', { ...DOC, elements: 'nope' }],
+    ['a page with no size', { ...FLAT, widthMm: undefined }],
+    ['a page sized zero', { ...FLAT, heightMm: 0 }],
+    ['elements that are not an array', { ...FLAT, elements: 'nope' }],
     ['an unknown element type', {
-      ...DOC,
+      ...FLAT,
       elements: [{ type: 'video', id: 'v', labelKey: 'field_text', x: 0, y: 0 }],
     }],
     ['a text element with no font size', {
-      ...DOC,
+      ...FLAT,
       elements: [{
         type: 'text',
         id: 't',
@@ -91,11 +116,11 @@ describe('parseDocument', () => {
       }],
     }],
     ['coordinates that are not numbers', {
-      ...DOC,
-      elements: [{ ...DOC.elements[0], x: 'left' }],
+      ...FLAT,
+      elements: [{ ...ELEMENTS[0], x: 'left' }],
     }],
     ['a QR element with no size', {
-      ...DOC,
+      ...FLAT,
       elements: [{
         type: 'qr',
         id: 'q',
@@ -104,6 +129,12 @@ describe('parseDocument', () => {
         y: 0,
         url: 'https://example.com',
       }],
+    }],
+    ['a document with an empty page list', { ...DOC, pages: [] }],
+    ['a page with no id', { ...DOC, pages: [{ elements: ELEMENTS }] }],
+    ['a page holding a broken element', {
+      ...DOC,
+      pages: [{ id: 'page-1', elements: [{ ...ELEMENTS[0], fontSize: 'big' }] }],
     }],
   ])('rejects %s', (_label, broken) => {
     const result = parseDocument(JSON.stringify(broken));
@@ -118,11 +149,14 @@ describe('parseDocument', () => {
   it('keeps optional styling it does not know how to validate', () => {
     const withExtras = {
       ...DOC,
-      elements: [{ ...DOC.elements[0], align: 'center', muted: true }],
+      pages: [{
+        id: 'page-1',
+        elements: [{ ...ELEMENTS[0], align: 'center', muted: true }],
+      }],
     };
     const result = parseDocument(JSON.stringify(withExtras));
 
-    expect(result.ok && result.doc.elements[0]).toMatchObject({
+    expect(result.ok && result.doc.pages[0]!.elements[0]).toMatchObject({
       align: 'center',
       muted: true,
     });

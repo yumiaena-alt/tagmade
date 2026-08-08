@@ -124,14 +124,21 @@
     "image_drop_here": "Drop to place the image here",
     "background_color": "Background",
     "png_download": "PNG image",
-    "png_hint": "Saves a 300dpi image",
+    "png_hint": "Saves the current page as a 300dpi image",
     "png_error": "Could not build the PNG.",
     "layer_forward": "Bring forward",
     "layer_backward": "Send backward",
     "document_name": "Document name",
     "untitled_document": "Untitled",
     "my_templates_auto_note": "Editing anything records it here automatically.",
-    "my_template_name_required": "Please enter a name."
+    "my_template_name_required": "Please enter a name.",
+    "pages_label": "Pages",
+    "page_number": "Page {n}",
+    "add_page": "Add page",
+    "duplicate_page": "Duplicate page",
+    "delete_page": "Delete page",
+    "move_page_backward": "Move earlier",
+    "move_page_forward": "Move later"
   },
   "Editor": {
     "loading": "Loading the editor",

@@ -42,9 +42,13 @@ function register(font: FontFace): void {
 export function registerPdfFonts(doc: LabelDocument): void {
   register(fontById(DEFAULT_FONT_ID));
 
-  for (const element of doc.elements) {
-    if (element.type === 'text') {
-      register(fontById(element.fontId));
+  // Every page, not just the one on screen: a face used only on page two still
+  // has to be in the file.
+  for (const page of doc.pages) {
+    for (const element of page.elements) {
+      if (element.type === 'text') {
+        register(fontById(element.fontId));
+      }
     }
   }
 

@@ -7,10 +7,16 @@
  * on the canvas and a keystroke in the panel can never disagree — and because
  * every change funnels through `commit`, undo covers all of them for free.
  */
-import type { AddableType, DocElement, LabelDocument } from '@/utils/documentModel';
+import type {
+  AddableType,
+  DocElement,
+  FlatDocument,
+  LabelDocument,
+  LabelPage,
+} from '@/utils/documentModel';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { clampElement, withContent } from '@/utils/documentModel';
+import { clampElement, pageAt, toPagedDocument, withContent } from '@/utils/documentModel';
 import { DEFAULT_TEMPLATE_ID, findTemplate } from '@/utils/templateCatalog';
 
 /** Depth of the undo stack. Documents are small, so this is cheap. */
@@ -121,8 +127,27 @@ function blankElement(type: AddableType, doc: LabelDocument): DocElement {
   }
 }
 
+/**
+ * Id for a page about to be added.
+ *
+ * Derived from what the document already holds rather than a module counter, so
+ * a document restored from storage or a file cannot collide with it.
+ */
+function nextPageId(doc: LabelDocument): string {
+  const used = new Set(doc.pages.map(page => page.id));
+  let n = doc.pages.length + 1;
+
+  while (used.has(`page-${n}`)) {
+    n += 1;
+  }
+
+  return `page-${n}`;
+}
+
 type DocumentStore = {
   readonly doc: LabelDocument;
+  /** Which page the canvas is showing and every element action applies to. */
+  readonly activePageIndex: number;
   /** Currently selected element id, or null when nothing is selected. */
   readonly selectedId: string | null;
   readonly past: readonly LabelDocument[];
@@ -160,6 +185,24 @@ type DocumentStore = {
    */
   readonly reorderElement: (id: string, direction: 'forward' | 'backward') => void;
   readonly resizePage: (widthMm: number, heightMm: number) => void;
+  /**
+   * Shows a page. Not an edit, so it stays out of the history — stepping back
+   * through pages you merely looked at would bury the change you meant to undo.
+   */
+  readonly selectPage: (index: number) => void;
+  /** Appends an empty page after the active one and shows it. */
+  readonly addPage: () => void;
+  /**
+   * Copies the active page in after itself and shows the copy.
+   *
+   * The copied elements are given fresh ids: two pages sharing an id would make
+   * "the selected element" ambiguous the moment a page is reordered.
+   */
+  readonly duplicatePage: () => void;
+  /** Removes a page. Refused for the last one — a document must have a page. */
+  readonly removePage: (index: number) => void;
+  /** Moves a page one place through the print order. */
+  readonly movePage: (index: number, direction: 'forward' | 'backward') => void;
   readonly setBackground: (color: string) => void;
   readonly setDocumentName: (name: string) => void;
   /**
@@ -215,24 +258,68 @@ function commit(
   };
 }
 
-/** Drops a selection that the restored document no longer contains. */
-function keepSelection(doc: LabelDocument, selectedId: string | null) {
-  return doc.elements.some(element => element.id === selectedId)
-    ? selectedId
-    : null;
+/**
+ * Where to look after the document is replaced wholesale — by undo, redo, or an
+ * import.
+ *
+ * The restored document may have fewer pages than the one on screen, and the
+ * selected element may not exist on the page that survives, so both are pulled
+ * back into range rather than left pointing at nothing.
+ */
+function restoreFocus(
+  doc: LabelDocument,
+  selectedId: string | null,
+  activePageIndex: number,
+): { selectedId: string | null; activePageIndex: number } {
+  const index = Math.min(Math.max(activePageIndex, 0), doc.pages.length - 1);
+  const isStillThere = pageAt(doc, index).elements.some(
+    element => element.id === selectedId,
+  );
+
+  return { activePageIndex: index, selectedId: isStillThere ? selectedId : null };
 }
 
+/** Rewrites one page, leaving the rest of the document alone. */
+function mapPage(
+  doc: LabelDocument,
+  index: number,
+  change: (page: LabelPage) => LabelPage,
+): LabelDocument {
+  return {
+    ...doc,
+    pages: doc.pages.map((page, at) => (at === index ? change(page) : page)),
+  };
+}
+
+/** Rewrites every element of the active page. */
 function mapElements(
   doc: LabelDocument,
+  index: number,
   change: (element: DocElement) => DocElement,
 ): LabelDocument {
-  return { ...doc, elements: doc.elements.map(change) };
+  return mapPage(doc, index, page => ({
+    ...page,
+    elements: page.elements.map(change),
+  }));
+}
+
+/** Appends to the active page, which is what every "add" action does. */
+function addToPage(
+  doc: LabelDocument,
+  index: number,
+  element: DocElement,
+): LabelDocument {
+  return mapPage(doc, index, page => ({
+    ...page,
+    elements: [...page.elements, element],
+  }));
 }
 
 export const useDocumentStore = create<DocumentStore>()(
   persist(
     set => ({
       doc: templateDocument(DEFAULT_TEMPLATE_ID),
+      activePageIndex: 0,
       selectedId: null,
       past: [],
       future: [],
@@ -240,12 +327,14 @@ export const useDocumentStore = create<DocumentStore>()(
       applyTemplate: templateId =>
         set(state => ({
           ...commit(state, templateDocument(templateId)),
+          activePageIndex: 0,
           selectedId: null,
         })),
 
       loadDocument: doc =>
         set(state => ({
-          ...commit(state, doc),
+          ...commit(state, toPagedDocument(doc)),
+          activePageIndex: 0,
           selectedId: null,
         })),
 
@@ -255,7 +344,7 @@ export const useDocumentStore = create<DocumentStore>()(
         set(state =>
           commit(
             state,
-            mapElements(state.doc, element =>
+            mapElements(state.doc, state.activePageIndex, element =>
               element.id === id ? ({ ...element, ...patch } as DocElement) : element),
             `update:${id}:${Object.keys(patch).join(',')}`,
           )),
@@ -264,7 +353,7 @@ export const useDocumentStore = create<DocumentStore>()(
         set(state =>
           commit(
             state,
-            mapElements(state.doc, element =>
+            mapElements(state.doc, state.activePageIndex, element =>
               element.id === id ? withContent(element, content) : element),
             `content:${id}`,
           )),
@@ -273,7 +362,7 @@ export const useDocumentStore = create<DocumentStore>()(
         set(state =>
           commit(
             state,
-            mapElements(state.doc, element =>
+            mapElements(state.doc, state.activePageIndex, element =>
               element.id === id ? { ...element, ...position } : element),
           )),
 
@@ -282,10 +371,7 @@ export const useDocumentStore = create<DocumentStore>()(
           const element = blankElement(type, state.doc);
 
           return {
-            ...commit(state, {
-              ...state.doc,
-              elements: [...state.doc.elements, element],
-            }),
+            ...commit(state, addToPage(state.doc, state.activePageIndex, element)),
             selectedId: element.id,
           };
         }),
@@ -300,10 +386,10 @@ export const useDocumentStore = create<DocumentStore>()(
           const at = clampElement(element, state.doc, position);
 
           return {
-            ...commit(state, {
-              ...state.doc,
-              elements: [...state.doc.elements, { ...element, ...at }],
-            }),
+            ...commit(
+              state,
+              addToPage(state.doc, state.activePageIndex, { ...element, ...at }),
+            ),
             selectedId: element.id,
           };
         }),
@@ -315,38 +401,123 @@ export const useDocumentStore = create<DocumentStore>()(
             = base.type === 'careSymbols' ? { ...base, composition } : base;
 
           return {
-            ...commit(state, {
-              ...state.doc,
-              elements: [...state.doc.elements, element],
-            }),
+            ...commit(state, addToPage(state.doc, state.activePageIndex, element)),
             selectedId: element.id,
           };
         }),
 
       removeElement: id =>
         set(state => ({
-          ...commit(state, {
-            ...state.doc,
-            elements: state.doc.elements.filter(element => element.id !== id),
-          }),
+          ...commit(
+            state,
+            mapPage(state.doc, state.activePageIndex, page => ({
+              ...page,
+              elements: page.elements.filter(element => element.id !== id),
+            })),
+          ),
           selectedId: state.selectedId === id ? null : state.selectedId,
         })),
 
       reorderElement: (id, direction) =>
         set((state) => {
-          const from = state.doc.elements.findIndex(item => item.id === id);
+          const current = pageAt(state.doc, state.activePageIndex).elements;
+          const from = current.findIndex(item => item.id === id);
           const to = direction === 'forward' ? from + 1 : from - 1;
 
-          if (from < 0 || to < 0 || to >= state.doc.elements.length) {
+          if (from < 0 || to < 0 || to >= current.length) {
             return state;
           }
 
-          const elements = [...state.doc.elements];
+          const elements = [...current];
           const [moved] = elements.splice(from, 1);
 
           elements.splice(to, 0, moved!);
 
-          return commit(state, { ...state.doc, elements });
+          return commit(
+            state,
+            mapPage(state.doc, state.activePageIndex, page => ({ ...page, elements })),
+          );
+        }),
+
+      selectPage: index =>
+        set((state) => {
+          if (index < 0 || index >= state.doc.pages.length) {
+            return state;
+          }
+
+          // The selection belongs to the page it was made on.
+          return { activePageIndex: index, selectedId: null };
+        }),
+
+      addPage: () =>
+        set((state) => {
+          const at = state.activePageIndex + 1;
+          const pages = [...state.doc.pages];
+
+          pages.splice(at, 0, { id: nextPageId(state.doc), elements: [] });
+
+          return {
+            ...commit(state, { ...state.doc, pages }),
+            activePageIndex: at,
+            selectedId: null,
+          };
+        }),
+
+      duplicatePage: () =>
+        set((state) => {
+          const source = pageAt(state.doc, state.activePageIndex);
+          const at = state.activePageIndex + 1;
+          const pages = [...state.doc.pages];
+
+          pages.splice(at, 0, {
+            id: nextPageId(state.doc),
+            elements: source.elements.map(element => ({
+              ...element,
+              id: nextElementId(element.type),
+            })),
+          });
+
+          return {
+            ...commit(state, { ...state.doc, pages }),
+            activePageIndex: at,
+            selectedId: null,
+          };
+        }),
+
+      removePage: index =>
+        set((state) => {
+          if (state.doc.pages.length < 2 || index < 0 || index >= state.doc.pages.length) {
+            return state;
+          }
+
+          const pages = state.doc.pages.filter((_, at) => at !== index);
+
+          return {
+            ...commit(state, { ...state.doc, pages }),
+            activePageIndex: Math.min(state.activePageIndex, pages.length - 1),
+            selectedId: null,
+          };
+        }),
+
+      movePage: (index, direction) =>
+        set((state) => {
+          const to = direction === 'forward' ? index + 1 : index - 1;
+
+          if (index < 0 || to < 0 || to >= state.doc.pages.length) {
+            return state;
+          }
+
+          const pages = [...state.doc.pages];
+          const [moved] = pages.splice(index, 1);
+
+          pages.splice(to, 0, moved!);
+
+          return {
+            ...commit(state, { ...state.doc, pages }),
+            // Follow the page that moved, so a repeated click keeps shifting
+            // the same one instead of whatever slid into its place.
+            activePageIndex: state.activePageIndex === index ? to : state.activePageIndex,
+          };
         }),
 
       setBackground: color =>
@@ -387,7 +558,7 @@ export const useDocumentStore = create<DocumentStore>()(
             doc: previous,
             past: state.past.slice(0, -1),
             future: [state.doc, ...state.future].slice(0, MAX_HISTORY),
-            selectedId: keepSelection(previous, state.selectedId),
+            ...restoreFocus(previous, state.selectedId, state.activePageIndex),
           };
         }),
 
@@ -405,25 +576,44 @@ export const useDocumentStore = create<DocumentStore>()(
             doc: next,
             past: [...state.past, state.doc].slice(-MAX_HISTORY),
             future: rest,
-            selectedId: keepSelection(next, state.selectedId),
+            ...restoreFocus(next, state.selectedId, state.activePageIndex),
           };
         }),
     }),
     {
       name: 'smart-label-document-store',
-      // Selection and history are per-session; only the document is restored.
+      // Selection, page and history are per-session; only the document is
+      // restored, and it always reopens on its first page.
       partialize: state => ({ doc: state.doc }),
       merge: (persisted, current) => {
-        const saved = persisted as { doc?: LabelDocument } | undefined;
+        const saved = persisted as { doc?: LabelDocument | FlatDocument } | undefined;
         const doc = saved?.doc;
+        // Documents saved before multi-page have no `pages`, so accept either
+        // shape here and upgrade — the alternative is throwing away whatever
+        // the operator had open when they last closed the tab.
         const isUsable
           = doc
             && typeof doc.widthMm === 'number'
             && typeof doc.heightMm === 'number'
-            && Array.isArray(doc.elements);
+            && (Array.isArray((doc as FlatDocument).elements)
+              || Array.isArray((doc as LabelDocument).pages));
 
-        return { ...current, doc: isUsable ? doc : current.doc };
+        return {
+          ...current,
+          doc: isUsable ? toPagedDocument(doc) : current.doc,
+        };
       },
     },
   ),
 );
+
+/**
+ * Elements of the page on screen.
+ *
+ * Every editing surface reads through this rather than `doc`, so "the elements"
+ * means the same thing in the canvas, the layer list and the format bar — and
+ * adding a page cannot leave one of them drawing page one for ever.
+ */
+export function useActiveElements(): readonly DocElement[] {
+  return useDocumentStore(state => pageAt(state.doc, state.activePageIndex).elements);
+}

@@ -144,6 +144,19 @@ export type DocElement
 
 export type ElementType = DocElement['type'];
 
+/**
+ * One page of a document.
+ *
+ * A page owns nothing but its elements. Size and background stay on the
+ * document because a label's pages are the front and back of one piece of
+ * stock, not independent artboards — printing a document whose page two was a
+ * different size would need a second roll.
+ */
+export type LabelPage = {
+  readonly id: string;
+  readonly elements: readonly DocElement[];
+};
+
 export type LabelDocument = {
   /**
    * Which template this document *is*.
@@ -159,8 +172,50 @@ export type LabelDocument = {
   readonly heightMm: number;
   /** Page colour. White when unset, which is what label stock usually is. */
   readonly backgroundColor?: string;
+  /** Never empty: a document without a page has nothing to draw. */
+  readonly pages: readonly LabelPage[];
+};
+
+/**
+ * A document with its elements at the top level and no pages.
+ *
+ * This is how every document was shaped before multi-page, so it is still what
+ * arrives from a browser save, an exported file, or the template catalog — all
+ * three of which are authored or were written flat. `toPagedDocument` is the
+ * one place that upgrades it.
+ */
+export type FlatDocument = Omit<LabelDocument, 'pages'> & {
   readonly elements: readonly DocElement[];
 };
+
+/** Id of the page a flat document becomes. */
+export const FIRST_PAGE_ID = 'page-1';
+
+/**
+ * The paged form of a document that may still be flat.
+ *
+ * Every entry point that takes a document from outside the running store —
+ * `localStorage`, an imported file, a saved template, the catalog — goes
+ * through here, so nothing downstream has to know two shapes. An empty `pages`
+ * array is treated as flat too, since a document with no page cannot be drawn.
+ */
+export function toPagedDocument(doc: LabelDocument | FlatDocument): LabelDocument {
+  if ('pages' in doc && doc.pages.length > 0) {
+    return doc;
+  }
+
+  const { elements, ...rest } = doc as FlatDocument;
+
+  return {
+    ...rest,
+    pages: [{ id: FIRST_PAGE_ID, elements: elements ?? [] }],
+  };
+}
+
+/** The page at `index`, falling back to the first — `pages` is never empty. */
+export function pageAt(doc: LabelDocument, index: number): LabelPage {
+  return doc.pages[index] ?? doc.pages[0]!;
+}
 
 /** Elements the user can add from scratch. */
 export const ADDABLE_TYPES = [

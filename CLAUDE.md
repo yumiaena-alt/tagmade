@@ -27,6 +27,11 @@ const names: Record<Mode, string> = { a: t('name_a'), b: t('name_b') };
 **기하는 밀리미터로 저장합니다.** px·pt·inch는 렌더링·표시 시점 변환일 뿐입니다.
 이 규칙이 캔버스 크기와 인쇄물 크기의 일치를 보장합니다.
 
+**요소는 문서가 아니라 페이지에 있습니다.** `doc.elements`는 없습니다.
+`doc.pages[i].elements`이고, 편집 화면에서 읽을 때는 `useActiveElements()`를 쓰세요.
+스토어 안에서는 `mapElements`·`addToPage`가 `activePageIndex`를 받습니다. 이걸
+우회해 `doc.pages[0]`을 직접 건드리면 2페이지에서 조용히 1페이지가 바뀝니다.
+
 ## 작업 시 주의
 
 - **요소 타입 추가**: `documentModel.ts` 정의 → `DocumentSvg`·`DocumentCanvas`·
@@ -40,6 +45,11 @@ const names: Record<Mode, string> = { a: t('name_a'), b: t('name_b') };
 - **문서 변경 액션 추가**: `useDocumentStore`의 `commit` 헬퍼를 지나게 하세요.
   그러면 되돌리기가 자동으로 커버됩니다. 연속 편집을 합칠 대상이면
   `coalesceKey`를 넘기고, 개별 되돌리기 대상이면 생략하세요.
+- **문서 필드 추가**: 저장된 문서가 들어오는 경계가 셋입니다 —
+  `useDocumentStore`의 `merge`(localStorage), `documentFile.ts`의 `parseDocument`
+  (파일), `useUserTemplateStore`의 `merge`(내 템플릿). 셋 다 `toPagedDocument`를
+  지나므로 모양 변경은 거기에 얹으세요. 파일 형식이 옛 빌드와 호환되지 않게
+  바뀌면 `FILE_VERSION`도 올립니다.
 
 ## 검증 습관
 
@@ -52,7 +62,14 @@ const names: Record<Mode, string> = { a: t('name_a'), b: t('name_b') };
   SVG 사각형을 **경로 fill로** 내보냅니다
 
 콘텐츠 스트림을 `DecompressionStream('deflate')`로 풀어 연산자를 세고, MediaBox가
-문서의 mm 크기와 일치하는지 확인하세요.
+문서의 mm 크기와 일치하는지 확인하세요. 스트림을 자를 때는 `endstream`까지가
+아니라 **딕셔너리의 `/Length` 값만큼** 잘라야 합니다. 뒤에 붙는 줄바꿈 한 바이트
+때문에 `DecompressionStream`이 "Junk found after end of compressed data"로 죽습니다.
+`endstream` 안에도 `stream`이 들어 있어 단순 검색은 오프셋이 어긋납니다.
+
+여러 페이지가 된 뒤로는 **페이지 수와 페이지별 내용**까지 봐야 합니다. `/Type /Page`
+개수, MediaBox가 페이지마다 같은지, 그리고 각 페이지 콘텐츠 스트림의 연산자 수가
+서로 다른지(= 페이지가 실제로 다른 그림인지) 확인하세요.
 
 **브라우저 콘솔 버퍼는 지워지지 않습니다.** 이미 삭제한 파일을 가리키는 낡은
 에러가 계속 보입니다. 권위 있는 출처는 dev 서버 로그와 `npm run build`입니다.

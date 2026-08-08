@@ -10,10 +10,23 @@
  * that arrives is therefore checked field by field before it reaches the store,
  * and anything unrecognised is rejected rather than patched up.
  */
-import type { DocElement, ElementType, LabelDocument } from './documentModel';
+import type {
+  DocElement,
+  ElementType,
+  FlatDocument,
+  LabelDocument,
+  LabelPage,
+} from './documentModel';
+import { toPagedDocument } from './documentModel';
 
-/** Bumped only if the shape changes in a way older files cannot satisfy. */
-const FILE_VERSION = 1;
+/**
+ * Bumped only if the shape changes in a way older files cannot satisfy.
+ *
+ * 2 introduced `pages`. Version 1 files still open — they are read as a
+ * one-page document — but a version 2 file cannot be handed back to a build
+ * that only knows version 1, which is what the ceiling below refuses.
+ */
+const FILE_VERSION = 2;
 
 const FILE_KIND = 'tagmade.label-document';
 
@@ -107,18 +120,35 @@ function isValidElement(value: unknown): value is DocElement {
   }
 }
 
-function isValidDocument(value: unknown): value is LabelDocument {
+function isValidPage(value: unknown): value is LabelPage {
+  return isRecord(value)
+    && typeof value.id === 'string'
+    && Array.isArray(value.elements)
+    && value.elements.every(isValidElement);
+}
+
+/**
+ * Accepts both document shapes.
+ *
+ * Version 1 files put the elements at the top level, and those files are still
+ * out there on people's disks — refusing them because the app grew pages would
+ * be losing someone's work over a field name.
+ */
+function isValidDocument(value: unknown): value is LabelDocument | FlatDocument {
   if (!isRecord(value)) {
     return false;
   }
+
+  const hasPages = Array.isArray(value.pages)
+    ? value.pages.length > 0 && value.pages.every(isValidPage)
+    : Array.isArray(value.elements) && value.elements.every(isValidElement);
 
   return typeof value.templateId === 'string'
     && isFiniteNumber(value.widthMm)
     && value.widthMm > 0
     && isFiniteNumber(value.heightMm)
     && value.heightMm > 0
-    && Array.isArray(value.elements)
-    && value.elements.every(isValidElement);
+    && hasPages;
 }
 
 /** The document as file text, pretty-printed so a diff of two saves is readable. */
@@ -158,12 +188,12 @@ export function parseDocument(text: string): ParseResult {
     }
 
     return isValidDocument(parsed.document)
-      ? { ok: true, doc: parsed.document }
+      ? { ok: true, doc: toPagedDocument(parsed.document) }
       : { ok: false, reason: 'not_a_document' };
   }
 
   return isValidDocument(parsed)
-    ? { ok: true, doc: parsed }
+    ? { ok: true, doc: toPagedDocument(parsed) }
     : { ok: false, reason: 'not_a_document' };
 }
 

@@ -11,9 +11,10 @@
  * shared, so a save that would not fit is refused with a reason rather than
  * silently dropped by the browser.
  */
-import type { LabelDocument } from '@/utils/documentModel';
+import type { FlatDocument, LabelDocument } from '@/utils/documentModel';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { toPagedDocument } from '@/utils/documentModel';
 
 export type UserTemplate = {
   readonly id: string;
@@ -141,19 +142,26 @@ export const useUserTemplateStore = create<UserTemplateStore>()(
         }
 
         // Anything malformed is dropped rather than handed to a renderer.
-        const usable = list.filter((item): item is UserTemplate => {
-          const record = item as Partial<UserTemplate> | null;
+        // Entries saved before multi-page hold a flat document, so both shapes
+        // are accepted here and paged on the way through.
+        const usable = list
+          .filter((item): item is UserTemplate => {
+            const record = item as Partial<UserTemplate> | null;
+            const doc = record?.document as
+              | Partial<LabelDocument & FlatDocument>
+              | undefined;
 
-          return Boolean(
-            record
-            && typeof record.id === 'string'
-            && typeof record.name === 'string'
-            && record.document
-            && typeof record.document.widthMm === 'number'
-            && typeof record.document.heightMm === 'number'
-            && Array.isArray(record.document.elements),
-          );
-        });
+            return Boolean(
+              record
+              && typeof record.id === 'string'
+              && typeof record.name === 'string'
+              && doc
+              && typeof doc.widthMm === 'number'
+              && typeof doc.heightMm === 'number'
+              && (Array.isArray(doc.elements) || Array.isArray(doc.pages)),
+            );
+          })
+          .map(item => ({ ...item, document: toPagedDocument(item.document) }));
 
         return { ...current, templates: usable };
       },

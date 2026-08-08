@@ -5,7 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { CareSummary } from '@/features/label/CareSummary';
-import { useDocumentStore } from '@/store/useDocumentStore';
+import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
 import { buildCareGuide } from '@/utils/careRules';
 import { elementContent } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
@@ -56,7 +56,7 @@ export const ElementsPanel = () => {
   const t = useTranslations('Studio');
   const fieldLabels = useEditorFieldLabels();
   const [uploadError, setUploadError] = useState(false);
-  const doc = useDocumentStore(state => state.doc);
+  const elements = useActiveElements();
   const selectedId = useDocumentStore(state => state.selectedId);
   const select = useDocumentStore(state => state.select);
   const setElementContent = useDocumentStore(state => state.setElementContent);
@@ -74,7 +74,7 @@ export const ElementsPanel = () => {
     }
   };
 
-  const selected = doc.elements.find(element => element.id === selectedId);
+  const selected = elements.find(element => element.id === selectedId);
 
   return (
     <div className="space-y-6">
@@ -82,15 +82,15 @@ export const ElementsPanel = () => {
       <section className="space-y-2">
         <h2 className="text-sm font-medium">{t('elements_heading')}</h2>
 
-        {doc.elements.length === 0
+        {elements.length === 0
           ? <p className="text-sm text-muted-foreground">{t('no_selection')}</p>
           : (
               <ul className="space-y-2">
-                {doc.elements.map((element, index) => {
+                {elements.map((element, index) => {
                   const content = elementContent(element);
                   const isSelected = element.id === selectedId;
                   // The array is the draw order, so the last entry is on top.
-                  const isFront = index === doc.elements.length - 1;
+                  const isFront = index === elements.length - 1;
                   const isBack = index === 0;
 
                   return (

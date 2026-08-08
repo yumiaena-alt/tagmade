@@ -312,24 +312,30 @@ type DocumentPdfProps = {
  * resolution-independent rather than a screen capture. The page size is the
  * document's own millimetre size converted to points, so the file prints at
  * exactly the size shown on the canvas.
+ *
+ * Every page of the document becomes a PDF page, in order, all the same size —
+ * which is what a printer needs to run them off one piece of stock.
  */
 export const DocumentPdf = ({ doc, title }: DocumentPdfProps) => {
   registerPdfFonts(doc);
 
   return (
     <Document title={title}>
-      <Page
-        size={[pt(doc.widthMm), pt(doc.heightMm)]}
-        style={{
-          backgroundColor: doc.backgroundColor ?? '#ffffff',
-          fontFamily: PDF_FONT_FAMILY,
-          color: INK,
-        }}
-      >
-        {doc.elements.map(element => (
-          <ElementPdf key={element.id} element={element} />
-        ))}
-      </Page>
+      {doc.pages.map(page => (
+        <Page
+          key={page.id}
+          size={[pt(doc.widthMm), pt(doc.heightMm)]}
+          style={{
+            backgroundColor: doc.backgroundColor ?? '#ffffff',
+            fontFamily: PDF_FONT_FAMILY,
+            color: INK,
+          }}
+        >
+          {page.elements.map(element => (
+            <ElementPdf key={element.id} element={element} />
+          ))}
+        </Page>
+      ))}
     </Document>
   );
 };

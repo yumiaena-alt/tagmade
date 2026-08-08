@@ -17,7 +17,7 @@ import {
 } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useDocumentStore } from '@/store/useDocumentStore';
+import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
 import { fontById, FONTS } from '@/utils/fonts';
 import { cn } from '@/utils/Helpers';
 import { BarGroup, ColorField } from './barControls';
@@ -82,13 +82,13 @@ const Toggle = ({ pressed, disabled, label, onClick, children }: ToggleProps) =>
  */
 export const TextFormatBar = () => {
   const t = useTranslations('Studio');
-  const doc = useDocumentStore(state => state.doc);
+  const elements = useActiveElements();
   const selectedId = useDocumentStore(state => state.selectedId);
   const updateElement = useDocumentStore(state => state.updateElement);
   const [spacingOpen, setSpacingOpen] = useState(false);
   const spacingRef = useRef<HTMLDivElement>(null);
 
-  const selected: DocElement | undefined = doc.elements.find(
+  const selected: DocElement | undefined = elements.find(
     element => element.id === selectedId,
   );
   const element = selected?.type === 'text' ? selected : null;

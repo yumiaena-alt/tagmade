@@ -5,7 +5,8 @@
  * thumbnail, the interactive canvas, and (later) the PDF. Adding a template is a
  * data edit, not a new renderer.
  */
-import type { DocElement, LabelDocument, TextAlign } from './documentModel';
+import type { DocElement, FlatDocument, LabelDocument, TextAlign } from './documentModel';
+import { toPagedDocument } from './documentModel';
 
 export const TEMPLATE_CATEGORIES = [
   'care-label',
@@ -87,7 +88,7 @@ function row(
   ];
 }
 
-const CARE_LABEL_STANDARD: LabelDocument = {
+const CARE_LABEL_STANDARD: FlatDocument = {
   templateId: 'care-label-standard',
   widthMm: 30,
   heightMm: 70,
@@ -120,7 +121,7 @@ const CARE_LABEL_STANDARD: LabelDocument = {
   ],
 };
 
-const CARE_LABEL_WIDE: LabelDocument = {
+const CARE_LABEL_WIDE: FlatDocument = {
   templateId: 'care-label-wide',
   widthMm: 45,
   heightMm: 35,
@@ -142,7 +143,7 @@ const CARE_LABEL_WIDE: LabelDocument = {
   ],
 };
 
-const HANG_TAG_CLASSIC: LabelDocument = {
+const HANG_TAG_CLASSIC: FlatDocument = {
   templateId: 'hang-tag-classic',
   widthMm: 50,
   heightMm: 90,
@@ -157,7 +158,7 @@ const HANG_TAG_CLASSIC: LabelDocument = {
   ],
 };
 
-const HANG_TAG_MINIMAL: LabelDocument = {
+const HANG_TAG_MINIMAL: FlatDocument = {
   templateId: 'hang-tag-minimal',
   widthMm: 40,
   heightMm: 70,
@@ -170,7 +171,7 @@ const HANG_TAG_MINIMAL: LabelDocument = {
   ],
 };
 
-const IMPORT_LABEL_FULL: LabelDocument = {
+const IMPORT_LABEL_FULL: FlatDocument = {
   templateId: 'import-label-full',
   widthMm: 70,
   heightMm: 50,
@@ -187,7 +188,7 @@ const IMPORT_LABEL_FULL: LabelDocument = {
   ],
 };
 
-const IMPORT_LABEL_COMPACT: LabelDocument = {
+const IMPORT_LABEL_COMPACT: FlatDocument = {
   templateId: 'import-label-compact',
   widthMm: 55,
   heightMm: 35,
@@ -201,7 +202,7 @@ const IMPORT_LABEL_COMPACT: LabelDocument = {
   ],
 };
 
-const KC_MARK_MICRO: LabelDocument = {
+const KC_MARK_MICRO: FlatDocument = {
   templateId: 'kc-mark-micro',
   widthMm: 25,
   heightMm: 15,
@@ -214,7 +215,7 @@ const KC_MARK_MICRO: LabelDocument = {
   ],
 };
 
-const KC_MARK_STACKED: LabelDocument = {
+const KC_MARK_STACKED: FlatDocument = {
   templateId: 'kc-mark-stacked',
   widthMm: 20,
   heightMm: 24,
@@ -227,7 +228,7 @@ const KC_MARK_STACKED: LabelDocument = {
   ],
 };
 
-const LOGISTICS_SEAL_POLYBAG: LabelDocument = {
+const LOGISTICS_SEAL_POLYBAG: FlatDocument = {
   templateId: 'logistics-seal-polybag',
   widthMm: 60,
   heightMm: 30,
@@ -250,7 +251,7 @@ const LOGISTICS_SEAL_POLYBAG: LabelDocument = {
   ],
 };
 
-const LOGISTICS_SEAL_CARTON: LabelDocument = {
+const LOGISTICS_SEAL_CARTON: FlatDocument = {
   templateId: 'logistics-seal-carton',
   widthMm: 100,
   heightMm: 60,
@@ -275,7 +276,7 @@ const LOGISTICS_SEAL_CARTON: LabelDocument = {
   ],
 };
 
-const CARE_LABEL_MINI: LabelDocument = {
+const CARE_LABEL_MINI: FlatDocument = {
   templateId: 'care-label-mini',
   widthMm: 20,
   heightMm: 50,
@@ -307,7 +308,7 @@ const CARE_LABEL_MINI: LabelDocument = {
   ],
 };
 
-const HANG_TAG_SQUARE: LabelDocument = {
+const HANG_TAG_SQUARE: FlatDocument = {
   templateId: 'hang-tag-square',
   widthMm: 60,
   heightMm: 60,
@@ -326,7 +327,7 @@ const HANG_TAG_SQUARE: LabelDocument = {
  * sideways, which leaves a wide column for the copy and room for the QR beside
  * it rather than under it.
  */
-const HANG_TAG_WIDE: LabelDocument = {
+const HANG_TAG_WIDE: FlatDocument = {
   templateId: 'hang-tag-wide',
   widthMm: 90,
   heightMm: 50,
@@ -341,7 +342,7 @@ const HANG_TAG_WIDE: LabelDocument = {
   ],
 };
 
-const IMPORT_LABEL_PORTRAIT: LabelDocument = {
+const IMPORT_LABEL_PORTRAIT: FlatDocument = {
   templateId: 'import-label-portrait',
   widthMm: 40,
   heightMm: 70,
@@ -358,7 +359,7 @@ const IMPORT_LABEL_PORTRAIT: LabelDocument = {
   ],
 };
 
-const KC_MARK_WIDE: LabelDocument = {
+const KC_MARK_WIDE: FlatDocument = {
   templateId: 'kc-mark-wide',
   widthMm: 35,
   heightMm: 12,
@@ -371,7 +372,7 @@ const KC_MARK_WIDE: LabelDocument = {
   ],
 };
 
-const LOGISTICS_SEAL_SMALL: LabelDocument = {
+const LOGISTICS_SEAL_SMALL: FlatDocument = {
   templateId: 'logistics-seal-small',
   widthMm: 40,
   heightMm: 20,
@@ -392,21 +393,32 @@ const LOGISTICS_SEAL_SMALL: LabelDocument = {
   ],
 };
 
-const CUSTOM_CARD: LabelDocument = {
+const CUSTOM_CARD: FlatDocument = {
   templateId: 'custom-card',
   widthMm: 90,
   heightMm: 50,
   elements: [],
 };
 
-const CUSTOM_BLANK: LabelDocument = {
+const CUSTOM_BLANK: FlatDocument = {
   templateId: 'custom-blank',
   widthMm: 50,
   heightMm: 50,
   elements: [],
 };
 
-const TEMPLATES: readonly Template[] = [
+/**
+ * A template as authored here: one page, elements inline.
+ *
+ * Templates are written flat because that is how they read — a list of what is
+ * on the label. `TEMPLATES` pages them on the way out, so the rest of the app
+ * only ever sees the paged shape.
+ */
+type TemplateInit = Omit<Template, 'document'> & {
+  readonly document: FlatDocument;
+};
+
+const TEMPLATE_INITS: readonly TemplateInit[] = [
   { id: 'care-label-standard', category: 'care-label', nameKey: 'tpl_care_standard', document: CARE_LABEL_STANDARD },
   { id: 'care-label-wide', category: 'care-label', nameKey: 'tpl_care_wide', document: CARE_LABEL_WIDE },
   { id: 'care-label-mini', category: 'care-label', nameKey: 'tpl_care_mini', document: CARE_LABEL_MINI },
@@ -426,6 +438,11 @@ const TEMPLATES: readonly Template[] = [
   { id: 'custom-blank', category: 'custom', nameKey: 'tpl_custom_blank', document: CUSTOM_BLANK },
   { id: 'custom-card', category: 'custom', nameKey: 'tpl_custom_card', document: CUSTOM_CARD },
 ];
+
+const TEMPLATES: readonly Template[] = TEMPLATE_INITS.map(template => ({
+  ...template,
+  document: toPagedDocument(template.document),
+}));
 
 export const DEFAULT_TEMPLATE_ID = 'care-label-standard';
 

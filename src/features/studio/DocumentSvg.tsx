@@ -7,7 +7,7 @@ import {
 } from '@/features/label/careSymbolShapes';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { textLines } from '@/utils/documentModel';
+import { pageAt, textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
@@ -293,6 +293,8 @@ function ElementSvg({ element }: { element: DocElement }) {
 
 type DocumentSvgProps = {
   doc: LabelDocument;
+  /** Which page to draw. Defaults to the first, which is what a thumbnail shows. */
+  pageIndex?: number;
   /** Rendered size in CSS pixels; the viewBox stays in millimetres. */
   width?: number;
   height?: number;
@@ -300,15 +302,16 @@ type DocumentSvgProps = {
 };
 
 /**
- * Renders a document as plain SVG.
+ * Renders one page of a document as plain SVG.
  *
- * Used for the template thumbnails. It has no interactivity and no Konva
- * dependency, so a thumbnail costs a fraction of a live canvas. It renders on
- * the client today because the studio shell is client-only; the component itself
- * is server-safe if the gallery is ever moved out of the shell.
+ * Used for the template thumbnails and the page strip. It has no interactivity
+ * and no Konva dependency, so a thumbnail costs a fraction of a live canvas. It
+ * renders on the client today because the studio shell is client-only; the
+ * component itself is server-safe if the gallery is ever moved out of the shell.
  */
 export const DocumentSvg = ({
   doc,
+  pageIndex = 0,
   width,
   height,
   className,
@@ -329,7 +332,7 @@ export const DocumentSvg = ({
       height={doc.heightMm}
       fill={doc.backgroundColor ?? PAGE}
     />
-    {doc.elements.map(element => (
+    {pageAt(doc, pageIndex).elements.map(element => (
       <ElementSvg key={element.id} element={element} />
     ))}
   </svg>

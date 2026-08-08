@@ -10,7 +10,7 @@ import {
   CARE_SHAPES,
   PROHIBITION_STROKE,
 } from '@/features/label/careSymbolShapes';
-import { useDocumentStore } from '@/store/useDocumentStore';
+import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
 import { clampElement, elementSize, textLines } from '@/utils/documentModel';
@@ -331,6 +331,7 @@ type DocumentCanvasProps = {
  */
 export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const doc = useDocumentStore(state => state.doc);
+  const elements = useActiveElements();
   const selectedId = useDocumentStore(state => state.selectedId);
   const select = useDocumentStore(state => state.select);
   const moveElement = useDocumentStore(state => state.moveElement);
@@ -345,7 +346,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
 
   // Konva needs a decoded bitmap, so each image element's data URL is loaded
   // once and cached by src.
-  const imageSources = doc.elements
+  const imageSources = elements
     .filter(element => element.type === 'image' && element.src.length > 0)
     .map(element => (element.type === 'image' ? element.src : ''))
     .join(' ');
@@ -381,7 +382,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
 
     transformer.nodes(node ? [node] : []);
     transformer.getLayer()?.batchDraw();
-  }, [selectedId, doc.elements]);
+  }, [selectedId, elements]);
 
   // Delete removes the selection, Escape clears it.
   useEffect(() => {
@@ -414,7 +415,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
 
   const width = doc.widthMm * scale;
   const height = doc.heightMm * scale;
-  const editing = doc.elements.find(element => element.id === editingId);
+  const editing = elements.find(element => element.id === editingId);
 
   return (
     <div className="relative" style={{ width, height }}>
@@ -438,7 +439,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
             strokeWidth={1}
           />
 
-          {doc.elements.map(element => (
+          {elements.map(element => (
             <Group
               key={element.id}
               ref={(node) => {
@@ -491,7 +492,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
             anchorStroke="#4f46e5"
             anchorSize={8}
             enabledAnchors={
-              doc.elements.find(element => element.id === selectedId)?.type === 'text'
+              elements.find(element => element.id === selectedId)?.type === 'text'
                 ? TEXT_ANCHORS
                 : BOX_ANCHORS
             }

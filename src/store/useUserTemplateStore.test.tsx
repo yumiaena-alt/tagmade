@@ -6,17 +6,22 @@ const DOC: LabelDocument = {
   templateId: 'hang-tag-wide',
   widthMm: 90,
   heightMm: 50,
-  elements: [
+  pages: [
     {
-      type: 'text',
-      id: 'brand',
-      labelKey: 'field_brand',
-      x: 12,
-      y: 8,
-      width: 44,
-      fontSize: 6,
-      text: 'BVRI',
-      bold: true,
+      id: 'page-1',
+      elements: [
+        {
+          type: 'text',
+          id: 'brand',
+          labelKey: 'field_brand',
+          x: 12,
+          y: 8,
+          width: 44,
+          fontSize: 6,
+          text: 'BVRI',
+          bold: true,
+        },
+      ],
     },
   ],
 };
@@ -25,16 +30,21 @@ const DOC: LabelDocument = {
 function hugeDocument(): LabelDocument {
   return {
     ...DOC,
-    elements: [
+    pages: [
       {
-        type: 'image',
-        id: 'logo',
-        labelKey: 'field_image',
-        x: 0,
-        y: 0,
-        width: 20,
-        height: 20,
-        src: `data:image/png;base64,${'A'.repeat(2_100_000)}`,
+        id: 'page-1',
+        elements: [
+          {
+            type: 'image',
+            id: 'logo',
+            labelKey: 'field_image',
+            x: 0,
+            y: 0,
+            width: 20,
+            height: 20,
+            src: `data:image/png;base64,${'A'.repeat(2_100_000)}`,
+          },
+        ],
       },
     ],
   };

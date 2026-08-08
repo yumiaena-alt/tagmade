@@ -6,7 +6,7 @@ import { ImageIcon } from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
-import { ADDABLE_TYPES } from '@/utils/documentModel';
+import { ADDABLE_TYPES, FIRST_PAGE_ID } from '@/utils/documentModel';
 import { DocumentSvg } from './DocumentSvg';
 import { readImageFile } from './imageUpload';
 import { useAddElementLabels } from './useAddElementLabels';
@@ -32,16 +32,21 @@ function previewDocument(composition: string): LabelDocument {
     templateId: `preview-${composition}`,
     widthMm: 27,
     heightMm: 6,
-    elements: [
+    pages: [
       {
-        type: 'careSymbols',
-        id: 'preview',
-        labelKey: 'field_care_symbols',
-        x: 0.5,
-        y: 0.5,
-        composition,
-        glyphWidth: 5,
-        gap: 0.4,
+        id: FIRST_PAGE_ID,
+        elements: [
+          {
+            type: 'careSymbols',
+            id: 'preview',
+            labelKey: 'field_care_symbols',
+            x: 0.5,
+            y: 0.5,
+            composition,
+            glyphWidth: 5,
+            gap: 0.4,
+          },
+        ],
       },
     ],
   };

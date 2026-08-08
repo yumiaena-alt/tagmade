@@ -11,6 +11,7 @@ import { CanvasToolbar } from './CanvasToolbar';
 import { DocumentCanvas } from './DocumentCanvas';
 import { HistoryControls } from './HistoryControls';
 import { firstImageFile, readImageFile } from './imageUpload';
+import { PageStrip } from './PageStrip';
 
 /** Breathing room around the artwork when fitting it to the viewport. */
 const FIT_PADDING = 64;
@@ -308,6 +309,9 @@ export const CanvasWorkspace = () => {
           </button>
         </div>
       </div>
+
+      {/* The document's pages, below the artwork — see PageStrip. */}
+      <PageStrip />
 
       {/*
         The usage hint sits inside the box rather than under it, so the
