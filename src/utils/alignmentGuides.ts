@@ -37,7 +37,7 @@ export type SnapResult = {
   readonly guides: readonly AlignmentGuide[];
 };
 
-type Snap = {
+export type Snap = {
   /** Added to the position to land on the target. */
   readonly shift: number;
   /** Where the guide line goes. */
@@ -91,6 +91,60 @@ function edgesOf(start: number, length: number): readonly number[] {
   return [start, start + length / 2, start + length];
 }
 
+/** Every line on the page worth aligning to, split by axis. */
+export type AlignmentTargets = {
+  readonly x: readonly number[];
+  readonly y: readonly number[];
+};
+
+/**
+ * The lines a gesture can land on: the three of every other element, plus the
+ * page's edges and centre.
+ *
+ * Shared by moving and resizing so the two agree about what counts as aligned —
+ * an element that snapped while being dragged has to snap to the same line when
+ * its edge is pulled to it, or the guides would contradict each other.
+ *
+ * @param others Everything except the element being changed. Leaving it in
+ * makes every gesture snap to where it already is.
+ */
+export function alignmentTargets(
+  others: readonly DocElement[],
+  page: Pick<LabelDocument, 'widthMm' | 'heightMm'>,
+): AlignmentTargets {
+  const x: number[] = [];
+  const y: number[] = [];
+
+  for (const other of others) {
+    const size = elementSize(other);
+
+    x.push(...edgesOf(other.x, size.width));
+    y.push(...edgesOf(other.y, size.height));
+  }
+
+  x.push(0, page.widthMm / 2, page.widthMm);
+  y.push(0, page.heightMm / 2, page.heightMm);
+
+  return { x, y };
+}
+
+/**
+ * Pulls a single edge onto whatever it is nearly lined up with.
+ *
+ * A resize moves one edge and leaves the opposite one where it is, so unlike a
+ * drag there is no box to shift — only the held edge is a candidate, and the
+ * caller turns the returned shift into a new width or height.
+ *
+ * @param tolerance In millimetres, derived from `SNAP_TOLERANCE_PX` and scale.
+ */
+export function snapEdge(
+  edge: number,
+  targets: readonly number[],
+  tolerance: number,
+): Snap | null {
+  return bestSnap([edge], targets, tolerance);
+}
+
 /**
  * Pulls a dragged position onto whatever it is nearly lined up with.
  *
@@ -111,22 +165,10 @@ export function snapPosition(
   tolerance: number,
 ): SnapResult {
   const { width, height } = elementSize(moving);
+  const targets = alignmentTargets(others, page);
 
-  const targetsX: number[] = [];
-  const targetsY: number[] = [];
-
-  for (const other of others) {
-    const size = elementSize(other);
-
-    targetsX.push(...edgesOf(other.x, size.width));
-    targetsY.push(...edgesOf(other.y, size.height));
-  }
-
-  targetsX.push(0, page.widthMm / 2, page.widthMm);
-  targetsY.push(0, page.heightMm / 2, page.heightMm);
-
-  const x = bestSnap(edgesOf(position.x, width), targetsX, tolerance);
-  const y = bestSnap(edgesOf(position.y, height), targetsY, tolerance);
+  const x = bestSnap(edgesOf(position.x, width), targets.x, tolerance);
+  const y = bestSnap(edgesOf(position.y, height), targets.y, tolerance);
 
   const guides: AlignmentGuide[] = [];
 

@@ -1,6 +1,6 @@
 import type { DocElement } from './documentModel';
 import { describe, expect, it } from 'vitest';
-import { snapPosition } from './alignmentGuides';
+import { alignmentTargets, snapEdge, snapPosition } from './alignmentGuides';
 
 const PAGE = { widthMm: 100, heightMm: 100 };
 
@@ -149,5 +149,61 @@ describe('snapPosition', () => {
       { orientation: 'vertical', at: 0 },
       { orientation: 'horizontal', at: 100 },
     ]);
+  });
+});
+
+describe('alignmentTargets', () => {
+  it('offers every edge, centre and page line', () => {
+    const targets = alignmentTargets([rect('other', 30, 70, 10, 20)], PAGE);
+
+    expect(targets.x).toEqual([30, 35, 40, 0, 50, 100]);
+    expect(targets.y).toEqual([70, 80, 90, 0, 50, 100]);
+  });
+
+  it('offers only the page when nothing else is there', () => {
+    const targets = alignmentTargets([], PAGE);
+
+    expect(targets.x).toEqual([0, 50, 100]);
+    expect(targets.y).toEqual([0, 50, 100]);
+  });
+
+  it('measures a neighbour the way the renderers do', () => {
+    // A text box is as tall as one line, not as tall as its font size.
+    const targets = alignmentTargets([text('other', 0, 10, 4)], PAGE);
+
+    expect(targets.y).toEqual([10, 12.6, 15.2, 0, 50, 100]);
+  });
+});
+
+describe('snapEdge', () => {
+  const targets = [0, 30, 50, 100];
+
+  it('pulls an edge onto the closest line within tolerance', () => {
+    expect(snapEdge(30.3, targets, 1)).toEqual({
+      shift: expect.closeTo(-0.3, 10),
+      at: 30,
+    });
+  });
+
+  it('reports the shift needed to grow onto a line', () => {
+    expect(snapEdge(49.4, targets, 1)).toEqual({
+      shift: expect.closeTo(0.6, 10),
+      at: 50,
+    });
+  });
+
+  it('leaves an edge alone when nothing is close', () => {
+    expect(snapEdge(42, targets, 1)).toBeNull();
+  });
+
+  it('takes the nearer of two lines in range', () => {
+    expect(snapEdge(29.6, [30, 29, 100], 1)).toEqual({
+      shift: expect.closeTo(0.4, 10),
+      at: 30,
+    });
+  });
+
+  it('snaps exactly on a line to no movement at all', () => {
+    expect(snapEdge(50, targets, 1)).toEqual({ shift: 0, at: 50 });
   });
 });

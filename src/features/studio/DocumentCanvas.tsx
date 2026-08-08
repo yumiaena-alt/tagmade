@@ -12,7 +12,12 @@ import {
   PROHIBITION_STROKE,
 } from '@/features/label/careSymbolShapes';
 import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
-import { SNAP_TOLERANCE_PX, snapPosition } from '@/utils/alignmentGuides';
+import {
+  alignmentTargets,
+  SNAP_TOLERANCE_PX,
+  snapEdge,
+  snapPosition,
+} from '@/utils/alignmentGuides';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
 import { clampElement, elementSize, resizedElement, textLines } from '@/utils/documentModel';
@@ -351,6 +356,37 @@ function resizePatch(element: DocElement, node: Konva.Node): Partial<DocElement>
   return resizedElement(element, factorX, factorY);
 }
 
+/** Which side of the box the operator has hold of, per axis. */
+type HeldEdges = {
+  readonly x: 'start' | 'end' | null;
+  readonly y: 'start' | 'end' | null;
+};
+
+/**
+ * Reads the grabbed anchor's name as the edges it moves.
+ *
+ * Konva names anchors by position — `middle-left`, `bottom-right` — and a
+ * resize only ever moves the sides the name mentions. A middle handle leaves
+ * one axis alone, which is why each axis is nullable.
+ */
+function heldEdges(anchor: string): HeldEdges {
+  return {
+    x: anchor.includes('left')
+      ? 'start'
+      : anchor.includes('right')
+        ? 'end'
+        : null,
+    y: anchor.includes('top')
+      ? 'start'
+      : anchor.includes('bottom')
+        ? 'end'
+        : null,
+  };
+}
+
+/** Smallest side a snap may leave behind, in millimetres. */
+const MIN_SIDE_MM = 1;
+
 type DocumentCanvasProps = {
   /** Preview pixels per millimetre. */
   scale: number;
@@ -490,6 +526,88 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
     return clampElement(element, doc, snapped.position);
   };
 
+  /**
+   * Pulls the edge being dragged by a handle onto whatever it nearly lines up
+   * with, leaving the opposite edge exactly where it is.
+   *
+   * A resize is not a move: shifting the whole box the way `settle` does would
+   * drag the fixed side along with it and change nothing about the size. So the
+   * held edge is snapped on its own and the difference is folded back into the
+   * node's scale, which is the only thing the transformer has written.
+   *
+   * @param bypass Held Alt, same escape hatch a drag has.
+   */
+  const settleResize = (
+    element: DocElement,
+    node: Konva.Node,
+    bypass: boolean,
+  ): void => {
+    const anchor = transformerRef.current?.getActiveAnchor();
+
+    if (bypass || !anchor) {
+      setGuides(current => (current.length === 0 ? current : []));
+
+      return;
+    }
+
+    const base = elementSize(element);
+    const held = heldEdges(anchor);
+    const tolerance = SNAP_TOLERANCE_PX / scale;
+    const targets = alignmentTargets(
+      elements.filter(other => other.id !== element.id),
+      doc,
+    );
+
+    const box = {
+      left: node.x() / scale,
+      top: node.y() / scale,
+      width: base.width * node.scaleX(),
+      height: base.height * node.scaleY(),
+    };
+
+    const next: AlignmentGuide[] = [];
+
+    if (held.x && base.width > 0) {
+      const isStart = held.x === 'start';
+      const edge = isStart ? box.left : box.left + box.width;
+      const snap = snapEdge(edge, targets.x, tolerance);
+      // Moving the leading edge takes the width with it; moving the trailing
+      // edge adds to it. Either way the other side must not move.
+      const width = snap
+        ? (isStart ? box.width - snap.shift : box.width + snap.shift)
+        : 0;
+
+      if (snap && width >= MIN_SIDE_MM) {
+        if (isStart) {
+          node.x(snap.at * scale);
+        }
+
+        node.scaleX(width / base.width);
+        next.push({ orientation: 'vertical', at: snap.at });
+      }
+    }
+
+    if (held.y && base.height > 0) {
+      const isStart = held.y === 'start';
+      const edge = isStart ? box.top : box.top + box.height;
+      const snap = snapEdge(edge, targets.y, tolerance);
+      const height = snap
+        ? (isStart ? box.height - snap.shift : box.height + snap.shift)
+        : 0;
+
+      if (snap && height >= MIN_SIDE_MM) {
+        if (isStart) {
+          node.y(snap.at * scale);
+        }
+
+        node.scaleY(height / base.height);
+        next.push({ orientation: 'horizontal', at: snap.at });
+      }
+    }
+
+    setGuides(current => (sameGuides(current, next) ? current : next));
+  };
+
   return (
     <div className="relative" style={{ width, height }}>
       <Stage
@@ -542,12 +660,26 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
                 moveElement(element.id, next);
                 setGuides([]);
               }}
+              onTransform={(event) => {
+                settleResize(
+                  element,
+                  event.target,
+                  Boolean((event.evt as MouseEvent | undefined)?.altKey),
+                );
+              }}
               onTransformEnd={(event) => {
-                updateElement(element.id, resizePatch(element, event.target));
-                event.target.position({
-                  x: element.x * scale,
-                  y: element.y * scale,
-                });
+                // The leading-edge case has already moved the node, and that
+                // move is part of the result — read it back before the patch
+                // resets the scale.
+                const moved = {
+                  x: event.target.x() / scale,
+                  y: event.target.y() / scale,
+                };
+                const patch = resizePatch(element, event.target);
+
+                updateElement(element.id, { ...patch, ...moved });
+                event.target.position({ x: moved.x * scale, y: moved.y * scale });
+                setGuides([]);
               }}
             >
               <ElementBody
