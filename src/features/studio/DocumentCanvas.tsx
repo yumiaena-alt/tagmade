@@ -15,7 +15,7 @@ import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
 import { SNAP_TOLERANCE_PX, snapPosition } from '@/utils/alignmentGuides';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { clampElement, elementSize, textLines } from '@/utils/documentModel';
+import { clampElement, elementSize, resizedElement, textLines } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
@@ -334,34 +334,21 @@ const ElementBody = ({ element, scale, image }: ElementNodeProps) => {
   }
 };
 
-/** Converts a transform gesture into millimetre dimensions for the element. */
-function resizePatch(
-  element: DocElement,
-  node: Konva.Node,
-  scale: number,
-): Partial<DocElement> {
-  const widthMm = (node.width() * node.scaleX()) / scale;
-  const heightMm = (node.height() * node.scaleY()) / scale;
+/**
+ * Reads a transform gesture off the node and hands it to the model.
+ *
+ * The node carries the change as a scale factor and nothing else, so the
+ * factors are taken and immediately reset — leaving them on would compound
+ * with the next gesture and with the redraw that follows the store update.
+ */
+function resizePatch(element: DocElement, node: Konva.Node): Partial<DocElement> {
+  const factorX = node.scaleX();
+  const factorY = node.scaleY();
 
   node.scaleX(1);
   node.scaleY(1);
 
-  switch (element.type) {
-    case 'text':
-      return { width: Math.max(4, widthMm) };
-    case 'rect':
-      return { width: Math.max(2, widthMm), height: Math.max(2, heightMm) };
-    case 'divider':
-      return { width: Math.max(2, widthMm) };
-    case 'barcode':
-      return { width: Math.max(8, widthMm), height: Math.max(4, heightMm) };
-    case 'qr':
-      return { size: Math.max(6, widthMm) };
-    case 'careSymbols':
-      return { glyphWidth: Math.max(2, widthMm / 5.8) };
-    default:
-      return {};
-  }
+  return resizedElement(element, factorX, factorY);
 }
 
 type DocumentCanvasProps = {
@@ -556,7 +543,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
                 setGuides([]);
               }}
               onTransformEnd={(event) => {
-                updateElement(element.id, resizePatch(element, event.target, scale));
+                updateElement(element.id, resizePatch(element, event.target));
                 event.target.position({
                   x: element.x * scale,
                   y: element.y * scale,

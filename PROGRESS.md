@@ -79,7 +79,7 @@ vercel deploy --prod
 
 | 항목 | 상태 |
 | --- | --- |
-| 테스트 | 182개 통과 (node 유닛 + chromium 브라우저) |
+| 테스트 | 188개 통과 (node 유닛 + chromium 브라우저) |
 | 타입·lint·i18n·knip·build | 전부 통과 |
 | 배포 | 자동, 정상 |
 
@@ -196,6 +196,12 @@ vercel deploy --prod
     한 번도 안 여는 사람까지 내려받고, 이건 사용자가 올리는 파일이 아니라 앱이
     싣고 다니는 고정 파일이라서요. 대신 **JSON으로 내보낸 문서는 이 배포본을
     참조**합니다(다른 도메인에서 열면 마크가 안 뜹니다).
+28. **크기 조절은 노드에서 크기를 읽지 않고 배율만 읽습니다.** Konva Transformer는
+    `newLocalTransform.decompose()` 결과(위치·회전·배율)만 노드에 씁니다. 요소를
+    담는 `Group`에는 width 속성이 없어 `node.width()`가 **영원히 0**이고, 여기에
+    배율을 곱해 크기를 구하던 코드가 모든 리사이즈를 최소값으로 붕괴시켰습니다
+    (텍스트 4mm, 도형 2×2mm). `resizedElement(element, factorX, factorY)`가
+    현재 mm 크기에 배율을 곱합니다 — 노드를 넘기는 형태로 되돌리지 마세요.
 27. **이미지는 세 렌더러 모두 비율을 유지합니다.** Konva 기본값은 상자에 맞춰
     늘리는 것이라, 화면에서는 찌그러졌는데 인쇄물은 멀쩡한 상태였습니다. 지금은
     셋 다 letterbox입니다 — `DocumentCanvas`의 `image` 분기를 건드릴 때 되돌리지
@@ -205,8 +211,8 @@ vercel deploy --prod
 
 ### 1순위 — 크기 조절에도 스냅
 
-지금 스냅은 **이동에만** 걸립니다. 핸들로 크기를 바꿀 때는 아무 데도 붙지 않아,
-끌어서 맞춘 폭이 이웃과 0.1mm 어긋난 채로 남습니다.
+크기 조절 자체는 고쳤지만(28번), 스냅은 여전히 **이동에만** 걸립니다. 핸들로 폭을
+맞추면 이웃과 0.1mm 어긋난 채 남습니다.
 
 **시작점:** `DocumentCanvas`의 `onTransform`(현재는 `onTransformEnd`만 있습니다).
 `snapPosition`을 그대로 쓸 수는 없습니다 — 이동은 상자를 통째로 옮기지만 크기
@@ -214,6 +220,12 @@ vercel deploy --prod
 후보선에 붙여야 합니다. `alignmentGuides.ts`에 `snapEdge(edge, targets, tolerance)`
 정도를 하나 더 두고 `bestSnap`을 공유하세요. 어느 앵커를 잡았는지는
 `transformer.getActiveAnchor()`로 알 수 있습니다.
+
+**검증 주의:** 브라우저 창이 숨겨져 있으면 `requestAnimationFrame`이 멈춰 Konva의
+히트 캔버스가 안 그려지고, 합성 포인터 이벤트로는 **선택조차 되지 않습니다.**
+핸들 드래그를 흉내내려 하지 말고, Transformer가 실제로 하는 일을 그대로
+재현하세요 — 노드에 `scaleX()`를 쓰고 `node._fire('transformend', { target: node })`.
+이러면 핸들러 배선을 히트 테스트 없이 검증할 수 있습니다.
 
 ### 2순위 — 페이지별 이름
 
@@ -299,4 +311,6 @@ fill**로 내보냅니다). 콘텐츠 스트림을 `DecompressionStream('deflate
 | `ed2cbda` | 업로드한 SVG를 인쇄까지 살아남는 형식으로 변환 |
 | `e62fbf4` | 여러 페이지 — 모델·세 렌더러·저장 경계 3곳·페이지 스트립 |
 | `c84c38a` | 정렬 가이드와 스냅 (Alt로 우회) |
-| (이번) | KC 템플릿에 정품 마크 적용, 이미지 비율 세 렌더러 통일 |
+| `3160c6c` | KC 템플릿에 정품 마크 적용, 이미지 비율 세 렌더러 통일 |
+| `be78842` | 여백 포함 KC 아트워크로 교체, 상자 크기 재조정 |
+| (이번) | 크기 조절 복구 — 핸들이 최소값으로 붕괴하던 버그 |

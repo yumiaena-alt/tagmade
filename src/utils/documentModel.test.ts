@@ -4,6 +4,7 @@ import {
   clampElement,
   elementContent,
   elementSize,
+  resizedElement,
   withContent,
 } from './documentModel';
 
@@ -169,5 +170,75 @@ describe('documentModel', () => {
 
       expect(withContent(divider, 'ignored')).toBe(divider);
     });
+  });
+});
+
+describe('resizedElement', () => {
+  const text: DocElement = {
+    type: 'text',
+    id: 't',
+    labelKey: 'field_text',
+    x: 0,
+    y: 0,
+    width: 25,
+    fontSize: 3.2,
+    text: 'BVRI',
+  };
+
+  it('scales a text element from its current width', () => {
+    // Regression: this used to read a width off the Konva group, which is
+    // always 0, so any resize collapsed the element to its 4mm floor.
+    expect(resizedElement(text, 1.4, 1)).toEqual({ width: 35 });
+  });
+
+  it('scales both sides of a box independently', () => {
+    const rect: DocElement = {
+      type: 'rect',
+      id: 'r',
+      labelKey: 'field_shape',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 4,
+    };
+
+    expect(resizedElement(rect, 2, 0.5)).toEqual({ width: 20, height: 2 });
+  });
+
+  it('holds a floor so an element cannot be shrunk out of reach', () => {
+    expect(resizedElement(text, 0.01, 1)).toEqual({ width: 4 });
+  });
+
+  it('leaves a gesture that changed nothing exactly as it was', () => {
+    expect(resizedElement(text, 1, 1)).toEqual({ width: 25 });
+  });
+
+  it('resizes a QR by its single size field', () => {
+    const qr: DocElement = {
+      type: 'qr',
+      id: 'q',
+      labelKey: 'field_qr',
+      x: 0,
+      y: 0,
+      url: 'https://example.com',
+      size: 18,
+    };
+
+    expect(resizedElement(qr, 1.5, 1.5)).toEqual({ size: 27 });
+  });
+
+  it('resizes a care-symbol block by its glyph width', () => {
+    const care: DocElement = {
+      type: 'careSymbols',
+      id: 'c',
+      labelKey: 'field_care_symbols',
+      x: 0,
+      y: 0,
+      composition: '면 100%',
+      glyphWidth: 4,
+      gap: 0.7,
+    };
+
+    expect(resizedElement(care, 1.5, 1)).toEqual({ glyphWidth: 6 });
   });
 });

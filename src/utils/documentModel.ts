@@ -313,6 +313,56 @@ export function textLines(element: {
 }
 
 /**
+ * The element resized by a transform gesture.
+ *
+ * Takes the scale factors the transformer reports rather than a node, because
+ * there is no size to read off the node: Konva writes back only a decomposed
+ * transform — position, rotation, scale — so the group the canvas draws each
+ * element into never gains a width of its own and `width()` answers 0 for ever.
+ * Multiplying `0` by the scale is how every resize used to collapse an element
+ * to its minimum instead of the size it was dragged to.
+ *
+ * Each type keeps a floor small enough to be a deliberate choice and large
+ * enough to stay grabbable.
+ */
+export function resizedElement(
+  element: DocElement,
+  factorX: number,
+  factorY: number,
+): Partial<DocElement> {
+  switch (element.type) {
+    case 'text':
+      return { width: Math.max(4, element.width * factorX) };
+    case 'rect':
+      return {
+        width: Math.max(2, element.width * factorX),
+        height: Math.max(2, element.height * factorY),
+      };
+    case 'divider':
+      return { width: Math.max(2, element.width * factorX) };
+    case 'barcode':
+      return {
+        width: Math.max(8, element.width * factorX),
+        height: Math.max(4, element.height * factorY),
+      };
+    case 'qr':
+      return { size: Math.max(6, element.size * factorX) };
+    case 'careSymbols':
+      // Five glyphs and four gaps make the block; the gap rides the glyph.
+      return { glyphWidth: Math.max(2, element.glyphWidth * factorX) };
+    case 'image':
+      return {
+        width: Math.max(2, element.width * factorX),
+        height: Math.max(2, element.height * factorY),
+      };
+    case 'hole':
+      return { radius: Math.max(0.5, element.radius * factorX) };
+    default:
+      return {};
+  }
+}
+
+/**
  * The editable content of an element, so the layer list can offer one input per
  * element without knowing each type.
  */
