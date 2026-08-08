@@ -45,6 +45,10 @@ const names: Record<Mode, string> = { a: t('name_a'), b: t('name_b') };
 - **문서 변경 액션 추가**: `useDocumentStore`의 `commit` 헬퍼를 지나게 하세요.
   그러면 되돌리기가 자동으로 커버됩니다. 연속 편집을 합칠 대상이면
   `coalesceKey`를 넘기고, 개별 되돌리기 대상이면 생략하세요.
+- **캔버스 조작 동작 추가**: 기하 계산은 `alignmentGuides.ts`처럼 `utils`에 순수
+  함수로 두고 `DocumentCanvas`는 부르기만 하게 하세요. 스테이지를 띄우지 않고
+  테스트할 수 있느냐가 갈림길입니다. 화면 거리(겨냥 오차)는 mm가 아니라 픽셀로
+  잡고 배율로 나눠 쓰세요.
 - **문서 필드 추가**: 저장된 문서가 들어오는 경계가 셋입니다 —
   `useDocumentStore`의 `merge`(localStorage), `documentFile.ts`의 `parseDocument`
   (파일), `useUserTemplateStore`의 `merge`(내 템플릿). 셋 다 `toPagedDocument`를

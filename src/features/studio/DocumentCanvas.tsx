@@ -1,6 +1,7 @@
 'use client';
 
 import type Konva from 'konva';
+import type { AlignmentGuide } from '@/utils/alignmentGuides';
 import type { DocElement } from '@/utils/documentModel';
 import { useEffect, useRef, useState } from 'react';
 import { Circle, Group, Image as KonvaImage, Layer, Line, Path, Rect, Stage, Text, Transformer } from 'react-konva';
@@ -11,6 +12,7 @@ import {
   PROHIBITION_STROKE,
 } from '@/features/label/careSymbolShapes';
 import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
+import { SNAP_TOLERANCE_PX, snapPosition } from '@/utils/alignmentGuides';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
 import { clampElement, elementSize, textLines } from '@/utils/documentModel';
@@ -23,6 +25,31 @@ const INK = '#111111';
 const MUTED_INK = '#5a5a5a';
 const GUIDE = '#bdbdbd';
 const FONT = 'Inter, "Malgun Gothic", sans-serif';
+
+/**
+ * Alignment guides, in a colour used for nothing else.
+ *
+ * Deliberately not the indigo of the selection box: a guide is a statement
+ * about two things lining up, not about what is selected, and sharing a colour
+ * made the two read as one highlight.
+ */
+const SNAP_GUIDE = '#f43f5e';
+
+/**
+ * True when two guide sets would draw the same lines.
+ *
+ * A drag fires a move event per pointer sample. Without this the canvas would
+ * re-render on every one of them; with it, React only re-renders on the frames
+ * where a snap actually engages or lets go.
+ */
+function sameGuides(
+  a: readonly AlignmentGuide[],
+  b: readonly AlignmentGuide[],
+): boolean {
+  return a.length === b.length
+    && a.every((guide, index) =>
+      guide.orientation === b[index]?.orientation && guide.at === b[index]?.at);
+}
 
 /** Anchor sets per element type: text only stretches horizontally. */
 const TEXT_ANCHORS = ['middle-left', 'middle-right'];
@@ -343,6 +370,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const nodesRef = useRef(new Map<string, Konva.Group>());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+  const [guides, setGuides] = useState<readonly AlignmentGuide[]>([]);
 
   // Konva needs a decoded bitmap, so each image element's data URL is loaded
   // once and cached by src.
@@ -417,6 +445,45 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const height = doc.heightMm * scale;
   const editing = elements.find(element => element.id === editingId);
 
+  /**
+   * Where a dragged element should actually come to rest: snapped to whatever
+   * it nearly lines up with, then held inside the page.
+   *
+   * Clamping comes last so the page edge always wins — but the page's own edges
+   * are snap targets too, so the two rarely disagree.
+   *
+   * @param bypass Held Alt. Every editor lets you overrule the magnet, and
+   * without it there are positions near an edge you simply cannot express.
+   */
+  const settle = (
+    element: DocElement,
+    node: Konva.Node,
+    bypass: boolean,
+  ): { x: number; y: number } => {
+    const dropped = { x: node.x() / scale, y: node.y() / scale };
+
+    if (bypass) {
+      setGuides(current => (current.length === 0 ? current : []));
+
+      return clampElement(element, doc, dropped);
+    }
+
+    const snapped = snapPosition(
+      element,
+      elements.filter(other => other.id !== element.id),
+      doc,
+      dropped,
+      // A pointing tolerance, so it is fixed on screen and shrinks in
+      // millimetres as the operator zooms in.
+      SNAP_TOLERANCE_PX / scale,
+    );
+
+    setGuides(current =>
+      sameGuides(current, snapped.guides) ? current : snapped.guides);
+
+    return clampElement(element, doc, snapped.position);
+  };
+
   return (
     <div className="relative" style={{ width, height }}>
       <Stage
@@ -457,14 +524,17 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
               onTouchStart={() => select(element.id)}
               onDblClick={() =>
                 element.type === 'text' ? setEditingId(element.id) : undefined}
+              onDragMove={(event) => {
+                const next = settle(element, event.target, event.evt.altKey);
+
+                event.target.position({ x: next.x * scale, y: next.y * scale });
+              }}
               onDragEnd={(event) => {
-                const next = clampElement(element, doc, {
-                  x: event.target.x() / scale,
-                  y: event.target.y() / scale,
-                });
+                const next = settle(element, event.target, event.evt.altKey);
 
                 event.target.position({ x: next.x * scale, y: next.y * scale });
                 moveElement(element.id, next);
+                setGuides([]);
               }}
               onTransformEnd={(event) => {
                 updateElement(element.id, resizePatch(element, event.target, scale));
@@ -482,6 +552,25 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
                 }
               />
             </Group>
+          ))}
+
+          {/*
+            Alignment feedback, drawn above the artwork and below the handles so
+            a guide is never hidden by the thing it is describing.
+          */}
+          {guides.map(guide => (
+            <Line
+              key={`${guide.orientation}-${guide.at}`}
+              points={
+                guide.orientation === 'vertical'
+                  ? [guide.at * scale, 0, guide.at * scale, height]
+                  : [0, guide.at * scale, width, guide.at * scale]
+              }
+              stroke={SNAP_GUIDE}
+              strokeWidth={1}
+              dash={[4, 3]}
+              listening={false}
+            />
           ))}
 
           <Transformer
