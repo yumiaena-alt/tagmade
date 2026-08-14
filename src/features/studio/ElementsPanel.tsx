@@ -64,7 +64,7 @@ export const ElementsPanel = () => {
   const fieldLabels = useEditorFieldLabels();
   const [uploadError, setUploadError] = useState(false);
   const elements = useActiveElements();
-  const selectedId = useDocumentStore(state => state.selectedId);
+  const selectedIds = useDocumentStore(state => state.selectedIds);
   const select = useDocumentStore(state => state.select);
   const setElementContent = useDocumentStore(state => state.setElementContent);
   const updateElement = useDocumentStore(state => state.updateElement);
@@ -83,7 +83,9 @@ export const ElementsPanel = () => {
     }
   };
 
-  const selected = elements.find(element => element.id === selectedId);
+  // The inspector shows one element's fields. With several picked it follows
+  // the first, which is the one the operator started from.
+  const selected = elements.find(element => element.id === selectedIds[0]);
 
   return (
     <div className="space-y-6">
@@ -97,7 +99,7 @@ export const ElementsPanel = () => {
               <ul className="space-y-2">
                 {elements.map((element, index) => {
                   const content = elementContent(element);
-                  const isSelected = element.id === selectedId;
+                  const isSelected = selectedIds.includes(element.id);
                   // The array is the draw order, so the last entry is on top.
                   const isFront = index === elements.length - 1;
                   const isBack = index === 0;

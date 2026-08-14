@@ -45,11 +45,11 @@ describe('useDocumentStore', () => {
     it('clears the selection', () => {
       store().addElement('text');
 
-      expect(store().selectedId).not.toBeNull();
+      expect(store().selectedIds).not.toHaveLength(0);
 
       store().applyTemplate('custom-blank');
 
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
 
     it('falls back to the default template for an unknown id', () => {
@@ -72,7 +72,7 @@ describe('useDocumentStore', () => {
       store().addElement('barcode');
 
       expect(elements()).toHaveLength(before + 1);
-      expect(store().selectedId).toBe(elements().at(-1)!.id);
+      expect(store().selectedIds).toEqual([elements().at(-1)!.id]);
       expect(elements().at(-1)!.type).toBe('barcode');
     });
 
@@ -106,7 +106,7 @@ describe('useDocumentStore', () => {
       const copy = elements().at(-1)!;
 
       expect(elements()).toHaveLength(before + 1);
-      expect(store().selectedId).toBe(copy.id);
+      expect(store().selectedIds).toEqual([copy.id]);
       expect(copy.id).not.toBe('brand');
       expect(elements().find(e => e.id === 'brand')).toEqual(original);
     });
@@ -146,7 +146,7 @@ describe('useDocumentStore', () => {
     it('copies onto the page being edited, not the first one', () => {
       store().addPage();
       store().addElement('qr');
-      const id = store().selectedId!;
+      const id = store().selectedIds[0]!;
 
       store().duplicateElement(id);
 
@@ -169,6 +169,115 @@ describe('useDocumentStore', () => {
       store().undo();
 
       expect(elements()).toHaveLength(before);
+    });
+  });
+
+  describe('multi-selection', () => {
+    it('replaces the selection on a plain select', () => {
+      store().select('brand');
+      store().select('sku');
+
+      expect(store().selectedIds).toEqual(['sku']);
+    });
+
+    it('extends and un-extends with toggleSelect', () => {
+      store().select('brand');
+      store().toggleSelect('sku');
+
+      expect(store().selectedIds).toEqual(['brand', 'sku']);
+
+      store().toggleSelect('brand');
+
+      expect(store().selectedIds).toEqual(['sku']);
+    });
+
+    it('removes everything selected in one undo step', () => {
+      const before = elements().length;
+
+      store().select('brand');
+      store().toggleSelect('sku');
+      store().removeSelected();
+
+      expect(elements()).toHaveLength(before - 2);
+      expect(store().selectedIds).toEqual([]);
+
+      store().undo();
+
+      expect(elements()).toHaveLength(before);
+    });
+
+    it('copies everything selected and selects the copies', () => {
+      const before = elements().length;
+
+      store().select('brand');
+      store().toggleSelect('sku');
+      store().duplicateSelected();
+
+      expect(elements()).toHaveLength(before + 2);
+      expect(store().selectedIds).toHaveLength(2);
+      expect(store().selectedIds).not.toContain('brand');
+    });
+
+    it('shifts everything selected by the same offset', () => {
+      const brand = elements().find(e => e.id === 'brand')!;
+      const sku = elements().find(e => e.id === 'sku')!;
+
+      store().select('brand');
+      store().toggleSelect('sku');
+      store().nudgeSelected({ x: 0, y: 2 });
+
+      expect(elements().find(e => e.id === 'brand')?.y).toBe(brand.y + 2);
+      expect(elements().find(e => e.id === 'sku')?.y).toBe(sku.y + 2);
+    });
+
+    it('leaves a locked element where it is', () => {
+      store().toggleElementLock('brand');
+      const brand = elements().find(e => e.id === 'brand')!;
+
+      store().select('brand');
+      store().toggleSelect('sku');
+      store().nudgeSelected({ x: 0, y: 2 });
+
+      expect(elements().find(e => e.id === 'brand')?.y).toBe(brand.y);
+    });
+
+    it('patches everything selected as one undo step', () => {
+      // `underline` rather than `bold`, which the template already sets on the
+      // brand — an assertion that it went back to unset would pass either way.
+      store().select('brand');
+      store().toggleSelect('sku');
+      store().updateSelected({ underline: true });
+
+      expect(elements().find(e => e.id === 'brand'))
+        .toMatchObject({ underline: true });
+      expect(elements().find(e => e.id === 'sku'))
+        .toMatchObject({ underline: true });
+
+      store().undo();
+
+      expect(elements().find(e => e.id === 'brand')).not.toHaveProperty('underline');
+    });
+
+    it('limits a patch to one element type when asked', () => {
+      store().select('brand');
+      store().toggleSelect('care');
+      store().updateSelected({ underline: true }, 'text');
+
+      expect(elements().find(e => e.id === 'brand'))
+        .toMatchObject({ underline: true });
+      // The care-symbol block is not text, so it keeps out of it.
+      expect(elements().find(e => e.id === 'care')).not.toHaveProperty('underline');
+    });
+
+    it('drops ids the undone document no longer holds', () => {
+      store().addElement('qr');
+      const added = store().selectedIds[0]!;
+
+      store().select('brand');
+      store().toggleSelect(added);
+      store().undo();
+
+      expect(store().selectedIds).toEqual(['brand']);
     });
   });
 
@@ -280,21 +389,21 @@ describe('useDocumentStore', () => {
       store().select('brand');
       store().toggleElementLock('brand');
 
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
 
     it('drops the selection when the selected element is hidden', () => {
       store().select('brand');
       store().toggleElementHidden('brand');
 
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
 
     it('leaves a different selection alone', () => {
       store().select('sku');
       store().toggleElementLock('brand');
 
-      expect(store().selectedId).toBe('sku');
+      expect(store().selectedIds).toEqual(['sku']);
     });
 
     it('is undoable', () => {
@@ -355,14 +464,14 @@ describe('useDocumentStore', () => {
       store().removeElement('brand');
 
       expect(elements().some(e => e.id === 'brand')).toBe(false);
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
 
     it('keeps the selection when a different element is removed', () => {
       store().select('brand');
       store().removeElement('sku');
 
-      expect(store().selectedId).toBe('brand');
+      expect(store().selectedIds).toEqual(['brand']);
     });
   });
 
@@ -467,13 +576,13 @@ describe('useDocumentStore', () => {
 
     it('drops a selection the restored document no longer has', () => {
       store().addElement('text');
-      const addedId = store().selectedId;
+      const addedId = store().selectedIds[0];
 
       expect(addedId).not.toBeNull();
 
       store().undo();
 
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
   });
 
@@ -565,11 +674,11 @@ describe('useDocumentStore', () => {
       store().addPage();
       store().addElement('text');
 
-      expect(store().selectedId).not.toBeNull();
+      expect(store().selectedIds).not.toHaveLength(0);
 
       store().selectPage(0);
 
-      expect(store().selectedId).toBeNull();
+      expect(store().selectedIds).toEqual([]);
     });
 
     it('ignores a page index that does not exist', () => {
@@ -674,7 +783,7 @@ describe('useDocumentStore', () => {
 
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
 
-      expect(parsed.state.selectedId).toBeUndefined();
+      expect(parsed.state.selectedIds).toBeUndefined();
     });
 
     it('reopens a document saved before multi-page as one page', async () => {

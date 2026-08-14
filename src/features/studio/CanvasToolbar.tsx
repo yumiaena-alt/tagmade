@@ -67,9 +67,10 @@ export const CanvasToolbar = () => {
   const t = useTranslations('Studio');
   const addLabels = useAddElementLabels();
   const addElement = useDocumentStore(state => state.addElement);
-  const duplicateElement = useDocumentStore(state => state.duplicateElement);
-  const removeElement = useDocumentStore(state => state.removeElement);
-  const selectedId = useDocumentStore(state => state.selectedId);
+  const duplicateSelected = useDocumentStore(state => state.duplicateSelected);
+  const removeSelected = useDocumentStore(state => state.removeSelected);
+  const selectedIds = useDocumentStore(state => state.selectedIds);
+  const hasSelection = selectedIds.length > 0;
 
   return (
     <div className="
@@ -111,18 +112,18 @@ export const CanvasToolbar = () => {
 
         <button
           type="button"
-          onClick={() => selectedId && duplicateElement(selectedId)}
-          disabled={selectedId === null}
+          onClick={duplicateSelected}
+          disabled={!hasSelection}
           aria-label={t('duplicate_element')}
           title={t('duplicate_element')}
           className={cn(
             'shrink-0 p-1.5 transition-colors',
-            selectedId === null
-              ? 'cursor-not-allowed text-muted-foreground/40'
-              : `
+            hasSelection
+              ? `
                 cursor-pointer
                 hover:bg-accent
-              `,
+              `
+              : 'cursor-not-allowed text-muted-foreground/40',
           )}
         >
           <CopyIcon className="size-4" />
@@ -130,18 +131,18 @@ export const CanvasToolbar = () => {
 
         <button
           type="button"
-          onClick={() => selectedId && removeElement(selectedId)}
-          disabled={selectedId === null}
+          onClick={removeSelected}
+          disabled={!hasSelection}
           aria-label={t('delete_element')}
           title={t('delete_element')}
           className={cn(
             'shrink-0 p-1.5 transition-colors',
-            selectedId === null
-              ? 'cursor-not-allowed text-muted-foreground/40'
-              : `
+            hasSelection
+              ? `
                 cursor-pointer
                 hover:bg-destructive/10 hover:text-destructive
-              `,
+              `
+              : 'cursor-not-allowed text-muted-foreground/40',
           )}
         >
           <TrashIcon className="size-4" />

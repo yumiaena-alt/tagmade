@@ -83,15 +83,18 @@ const Toggle = ({ pressed, disabled, label, onClick, children }: ToggleProps) =>
 export const TextFormatBar = () => {
   const t = useTranslations('Studio');
   const elements = useActiveElements();
-  const selectedId = useDocumentStore(state => state.selectedId);
-  const updateElement = useDocumentStore(state => state.updateElement);
+  const selectedIds = useDocumentStore(state => state.selectedIds);
+  const updateSelected = useDocumentStore(state => state.updateSelected);
   const [spacingOpen, setSpacingOpen] = useState(false);
   const spacingRef = useRef<HTMLDivElement>(null);
 
-  const selected: DocElement | undefined = elements.find(
-    element => element.id === selectedId,
-  );
-  const element = selected?.type === 'text' ? selected : null;
+  // The first text element in the selection supplies the values shown. A
+  // mixed selection still gets the bar, because the controls write to every
+  // text element in it and leave the rest alone.
+  const element = elements.find(
+    (item): item is Extract<DocElement, { type: 'text' }> =>
+      selectedIds.includes(item.id) && item.type === 'text',
+  ) ?? null;
 
   // Close the spacing popover on an outside click, the way a menu should.
   useEffect(() => {
@@ -115,7 +118,7 @@ export const TextFormatBar = () => {
   }
 
   const font = fontById(element.fontId);
-  const patch = (change: Partial<DocElement>) => updateElement(element.id, change);
+  const patch = (change: Partial<DocElement>) => updateSelected(change, 'text');
 
   const caseLabels: Record<TextCase, string> = {
     none: t('text_case_none'),

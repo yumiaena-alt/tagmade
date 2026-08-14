@@ -26,8 +26,8 @@ export const DocumentPngButton = () => {
   const doc = useDocumentStore(state => state.doc);
   const activePageIndex = useDocumentStore(state => state.activePageIndex);
   const selectPage = useDocumentStore(state => state.selectPage);
-  const selectedId = useDocumentStore(state => state.selectedId);
-  const select = useDocumentStore(state => state.select);
+  const selectedIds = useDocumentStore(state => state.selectedIds);
+  const restoreSelection = useDocumentStore(state => state.selectMany);
   const zoom = useViewStore(state => state.zoom);
   const [hasError, setHasError] = useState(false);
   const [isBuilding, setIsBuilding] = useState(false);
@@ -46,7 +46,7 @@ export const DocumentPngButton = () => {
   const handleDownload = async () => {
     const base = doc.name?.trim() || doc.templateId;
     const startedOn = activePageIndex;
-    const hadSelected = selectedId;
+    const hadSelected = selectedIds;
 
     setIsBuilding(true);
     setHasError(false);
@@ -86,7 +86,7 @@ export const DocumentPngButton = () => {
         // Back to the page being edited, with what was selected on it —
         // switching pages clears the selection.
         selectPage(startedOn);
-        select(hadSelected);
+        restoreSelection(hadSelected);
       }
 
       setIsBuilding(false);

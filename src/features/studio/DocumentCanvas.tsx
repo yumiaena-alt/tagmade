@@ -428,13 +428,14 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   // and the list is the only place it can be brought back from. The canvas gets
   // only what is meant to be drawn.
   const elements = visibleElements(useActiveElements());
-  const selectedId = useDocumentStore(state => state.selectedId);
+  const selectedIds = useDocumentStore(state => state.selectedIds);
   const select = useDocumentStore(state => state.select);
+  const toggleSelect = useDocumentStore(state => state.toggleSelect);
   const moveElement = useDocumentStore(state => state.moveElement);
   const updateElement = useDocumentStore(state => state.updateElement);
-  const removeElement = useDocumentStore(state => state.removeElement);
-  const duplicateElement = useDocumentStore(state => state.duplicateElement);
-  const nudgeElement = useDocumentStore(state => state.nudgeElement);
+  const removeSelected = useDocumentStore(state => state.removeSelected);
+  const duplicateSelected = useDocumentStore(state => state.duplicateSelected);
+  const nudgeSelected = useDocumentStore(state => state.nudgeSelected);
   const setElementContent = useDocumentStore(state => state.setElementContent);
   const gridStepMm = useViewStore(state => state.gridStepMm);
   const gridSnapping = useViewStore(state => state.snapToGrid);
@@ -479,11 +480,15 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
       return;
     }
 
-    const node = selectedId ? nodesRef.current.get(selectedId) : undefined;
+    // The transformer draws one box around everything handed to it, which is
+    // what makes a multi-selection read as a single thing to move.
+    const nodes = selectedIds
+      .map(id => nodesRef.current.get(id))
+      .filter((node): node is Konva.Group => Boolean(node));
 
-    transformer.nodes(node ? [node] : []);
+    transformer.nodes(nodes);
     transformer.getLayer()?.batchDraw();
-  }, [selectedId, elements]);
+  }, [selectedIds, elements]);
 
   // Delete removes the selection, Escape clears it.
   useEffect(() => {
@@ -495,20 +500,20 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
             || target.tagName === 'TEXTAREA'
             || target.isContentEditable);
 
-      if (isTyping || !selectedId) {
+      if (isTyping || selectedIds.length === 0) {
         return;
       }
 
       if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault();
-        removeElement(selectedId);
+        removeSelected();
       }
 
       // Ctrl/Cmd+D. The browser's own bookmark dialog has to be refused, or
       // duplicating an element also opens it.
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
         event.preventDefault();
-        duplicateElement(selectedId);
+        duplicateSelected();
       }
 
       const direction = NUDGE_DIRECTIONS[event.key];
@@ -519,7 +524,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
 
         const step = event.shiftKey ? NUDGE_FAR_MM : NUDGE_MM;
 
-        nudgeElement(selectedId, {
+        nudgeSelected({
           x: direction.x * step,
           y: direction.y * step,
         });
@@ -533,7 +538,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
     window.addEventListener('keydown', onKeyDown);
 
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedId, removeElement, duplicateElement, nudgeElement, select]);
+  }, [selectedIds, removeSelected, duplicateSelected, nudgeSelected, select]);
 
   const width = doc.widthMm * scale;
   const height = doc.heightMm * scale;
@@ -698,7 +703,15 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
               y={element.y * scale}
               draggable={!element.locked}
               listening={!element.locked}
-              onMouseDown={() => select(element.id)}
+              onMouseDown={(event) => {
+                // Shift or the platform modifier extends, exactly as a file
+                // list does; a plain click still replaces.
+                if (event.evt.shiftKey || event.evt.metaKey || event.evt.ctrlKey) {
+                  toggleSelect(element.id);
+                } else if (!selectedIds.includes(element.id)) {
+                  select(element.id);
+                }
+              }}
               onTouchStart={() => select(element.id)}
               onDblClick={() =>
                 element.type === 'text' ? setEditingId(element.id) : undefined}
@@ -773,7 +786,11 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
             anchorStroke="#4f46e5"
             anchorSize={8}
             enabledAnchors={
-              elements.find(element => element.id === selectedId)?.type === 'text'
+              // Text only stretches sideways. A mixed selection gets the box
+              // handles, because the group is not all text.
+              selectedIds.length === 1
+              && elements.find(element => element.id === selectedIds[0])
+                ?.type === 'text'
                 ? TEXT_ANCHORS
                 : BOX_ANCHORS
             }

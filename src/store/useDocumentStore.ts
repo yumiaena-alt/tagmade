@@ -10,6 +10,7 @@
 import type {
   AddableType,
   DocElement,
+  ElementType,
   FlatDocument,
   LabelDocument,
   LabelPage,
@@ -156,8 +157,14 @@ type DocumentStore = {
   readonly doc: LabelDocument;
   /** Which page the canvas is showing and every element action applies to. */
   readonly activePageIndex: number;
-  /** Currently selected element id, or null when nothing is selected. */
-  readonly selectedId: string | null;
+  /**
+   * Ids of the selected elements, in the order they were picked.
+   *
+   * An array rather than one id because aligning, deleting or nudging a row of
+   * fields one at a time is the tedium the canvas exists to remove. Empty when
+   * nothing is selected.
+   */
+  readonly selectedIds: readonly string[];
   readonly past: readonly LabelDocument[];
   readonly future: readonly LabelDocument[];
   /** Replaces the document with a template preset. */
@@ -168,7 +175,28 @@ type DocumentStore = {
    * document the renderers can draw.
    */
   readonly loadDocument: (doc: LabelDocument) => void;
+  /** Replaces the selection. `null` clears it. */
   readonly select: (id: string | null) => void;
+  /** Adds an element to the selection, or takes it out if already in. */
+  readonly toggleSelect: (id: string) => void;
+  /** Replaces the selection with exactly these ids. */
+  readonly selectMany: (ids: readonly string[]) => void;
+  /**
+   * Applies one patch to everything selected, as a single undo step.
+   *
+   * @param onlyType Restricts it to elements of that type, so the text bar can
+   * set a font on a mixed selection without writing `bold` onto a barcode.
+   */
+  readonly updateSelected: (
+    patch: Partial<DocElement>,
+    onlyType?: ElementType,
+  ) => void;
+  /** Removes everything selected. */
+  readonly removeSelected: () => void;
+  /** Copies everything selected, and leaves the copies selected. */
+  readonly duplicateSelected: () => void;
+  /** Shifts everything selected by the same offset, skipping locked ones. */
+  readonly nudgeSelected: (delta: { x: number; y: number }) => void;
   /** Merges a partial change into one element. */
   readonly updateElement: (id: string, patch: Partial<DocElement>) => void;
   /** Convenience for the layer inputs: sets whatever the element's content is. */
@@ -306,15 +334,16 @@ function commit(
  */
 function restoreFocus(
   doc: LabelDocument,
-  selectedId: string | null,
+  selectedIds: readonly string[],
   activePageIndex: number,
-): { selectedId: string | null; activePageIndex: number } {
+): { selectedIds: readonly string[]; activePageIndex: number } {
   const index = Math.min(Math.max(activePageIndex, 0), doc.pages.length - 1);
-  const isStillThere = pageAt(doc, index).elements.some(
-    element => element.id === selectedId,
-  );
+  const present = new Set(pageAt(doc, index).elements.map(element => element.id));
 
-  return { activePageIndex: index, selectedId: isStillThere ? selectedId : null };
+  return {
+    activePageIndex: index,
+    selectedIds: selectedIds.filter(id => present.has(id)),
+  };
 }
 
 /** Rewrites one page, leaving the rest of the document alone. */
@@ -345,11 +374,11 @@ function mapElements(
 function addToPage(
   doc: LabelDocument,
   index: number,
-  element: DocElement,
+  ...added: readonly DocElement[]
 ): LabelDocument {
   return mapPage(doc, index, page => ({
     ...page,
-    elements: [...page.elements, element],
+    elements: [...page.elements, ...added],
   }));
 }
 
@@ -358,7 +387,7 @@ export const useDocumentStore = create<DocumentStore>()(
     set => ({
       doc: templateDocument(DEFAULT_TEMPLATE_ID),
       activePageIndex: 0,
-      selectedId: null,
+      selectedIds: [],
       past: [],
       future: [],
 
@@ -366,17 +395,138 @@ export const useDocumentStore = create<DocumentStore>()(
         set(state => ({
           ...commit(state, templateDocument(templateId)),
           activePageIndex: 0,
-          selectedId: null,
+          selectedIds: [],
         })),
 
       loadDocument: doc =>
         set(state => ({
           ...commit(state, toPagedDocument(doc)),
           activePageIndex: 0,
-          selectedId: null,
+          selectedIds: [],
         })),
 
-      select: id => set({ selectedId: id }),
+      select: id => set({ selectedIds: id === null ? [] : [id] }),
+
+      toggleSelect: id =>
+        set(state => ({
+          selectedIds: state.selectedIds.includes(id)
+            ? state.selectedIds.filter(item => item !== id)
+            : [...state.selectedIds, id],
+        })),
+
+      selectMany: ids => set({ selectedIds: [...ids] }),
+
+      updateSelected: (patch, onlyType) =>
+        set((state) => {
+          const chosen = new Set(state.selectedIds);
+
+          if (chosen.size === 0) {
+            return state;
+          }
+
+          return commit(
+            state,
+            mapElements(state.doc, state.activePageIndex, element =>
+              chosen.has(element.id)
+              && (onlyType === undefined || element.type === onlyType)
+                ? ({ ...element, ...patch } as DocElement)
+                : element),
+            // Keyed by what changed rather than by which elements, so holding a
+            // colour picker is one undo step however many are selected.
+            `updateSelected:${Object.keys(patch).join(',')}`,
+          );
+        }),
+
+      removeSelected: () =>
+        set((state) => {
+          const chosen = new Set(state.selectedIds);
+
+          if (chosen.size === 0) {
+            return state;
+          }
+
+          return {
+            ...commit(
+              state,
+              mapPage(state.doc, state.activePageIndex, page => ({
+                ...page,
+                elements: page.elements.filter(item => !chosen.has(item.id)),
+              })),
+            ),
+            selectedIds: [],
+          };
+        }),
+
+      duplicateSelected: () =>
+        set((state) => {
+          const page = pageAt(state.doc, state.activePageIndex);
+          const sources = page.elements.filter(element =>
+            state.selectedIds.includes(element.id));
+
+          if (sources.length === 0) {
+            return state;
+          }
+
+          const copies = sources.map((source) => {
+            const copy: DocElement = {
+              ...source,
+              id: nextElementId(source.type),
+            };
+
+            return {
+              ...copy,
+              ...clampElement(copy, state.doc, {
+                x: source.x + DUPLICATE_OFFSET_MM,
+                y: source.y + DUPLICATE_OFFSET_MM,
+              }),
+            };
+          });
+
+          return {
+            ...commit(
+              state,
+              addToPage(state.doc, state.activePageIndex, ...copies),
+            ),
+            // The copies take over the selection, so dragging straight away
+            // moves what was just made rather than what it came from.
+            selectedIds: copies.map(copy => copy.id),
+          };
+        }),
+
+      nudgeSelected: delta =>
+        set((state) => {
+          const chosen = new Set(state.selectedIds);
+          const page = pageAt(state.doc, state.activePageIndex);
+          // A locked element is a guide to work over, so the keyboard must not
+          // shift it any more than the pointer can.
+          const movable = page.elements.filter(
+            element => chosen.has(element.id) && !element.locked,
+          );
+
+          if (movable.length === 0) {
+            return state;
+          }
+
+          const moved = new Map(
+            movable.map(element => [
+              element.id,
+              clampElement(element, state.doc, {
+                x: element.x + delta.x,
+                y: element.y + delta.y,
+              }),
+            ]),
+          );
+
+          return commit(
+            state,
+            mapElements(state.doc, state.activePageIndex, element =>
+              moved.has(element.id)
+                ? { ...element, ...moved.get(element.id)! }
+                : element),
+            // One key held down is one undo, not one per repeat.
+            'nudgeSelected',
+          );
+        }),
 
       updateElement: (id, patch) =>
         set(state =>
@@ -410,7 +560,7 @@ export const useDocumentStore = create<DocumentStore>()(
 
           return {
             ...commit(state, addToPage(state.doc, state.activePageIndex, element)),
-            selectedId: element.id,
+            selectedIds: [element.id],
           };
         }),
 
@@ -428,7 +578,7 @@ export const useDocumentStore = create<DocumentStore>()(
               state,
               addToPage(state.doc, state.activePageIndex, { ...element, ...at }),
             ),
-            selectedId: element.id,
+            selectedIds: [element.id],
           };
         }),
 
@@ -440,7 +590,7 @@ export const useDocumentStore = create<DocumentStore>()(
 
           return {
             ...commit(state, addToPage(state.doc, state.activePageIndex, element)),
-            selectedId: element.id,
+            selectedIds: [element.id],
           };
         }),
 
@@ -465,7 +615,7 @@ export const useDocumentStore = create<DocumentStore>()(
               state,
               addToPage(state.doc, state.activePageIndex, { ...copy, ...at }),
             ),
-            selectedId: copy.id,
+            selectedIds: [copy.id],
           };
         }),
 
@@ -504,7 +654,7 @@ export const useDocumentStore = create<DocumentStore>()(
           ),
           // A locked element cannot be clicked, so leaving the handles on it
           // would strand a selection the operator has no way to let go of.
-          selectedId: state.selectedId === id ? null : state.selectedId,
+          selectedIds: state.selectedIds.filter(item => item !== id),
         })),
 
       toggleElementHidden: id =>
@@ -516,7 +666,7 @@ export const useDocumentStore = create<DocumentStore>()(
                 ? { ...element, hidden: !element.hidden }
                 : element),
           ),
-          selectedId: state.selectedId === id ? null : state.selectedId,
+          selectedIds: state.selectedIds.filter(item => item !== id),
         })),
 
       removeElement: id =>
@@ -528,7 +678,7 @@ export const useDocumentStore = create<DocumentStore>()(
               elements: page.elements.filter(element => element.id !== id),
             })),
           ),
-          selectedId: state.selectedId === id ? null : state.selectedId,
+          selectedIds: state.selectedIds.filter(item => item !== id),
         })),
 
       reorderElement: (id, direction) =>
@@ -559,7 +709,7 @@ export const useDocumentStore = create<DocumentStore>()(
           }
 
           // The selection belongs to the page it was made on.
-          return { activePageIndex: index, selectedId: null };
+          return { activePageIndex: index, selectedIds: [] };
         }),
 
       addPage: () =>
@@ -572,7 +722,7 @@ export const useDocumentStore = create<DocumentStore>()(
           return {
             ...commit(state, { ...state.doc, pages }),
             activePageIndex: at,
-            selectedId: null,
+            selectedIds: [],
           };
         }),
 
@@ -593,7 +743,7 @@ export const useDocumentStore = create<DocumentStore>()(
           return {
             ...commit(state, { ...state.doc, pages }),
             activePageIndex: at,
-            selectedId: null,
+            selectedIds: [],
           };
         }),
 
@@ -608,7 +758,7 @@ export const useDocumentStore = create<DocumentStore>()(
           return {
             ...commit(state, { ...state.doc, pages }),
             activePageIndex: Math.min(state.activePageIndex, pages.length - 1),
-            selectedId: null,
+            selectedIds: [],
           };
         }),
 
@@ -679,7 +829,7 @@ export const useDocumentStore = create<DocumentStore>()(
             doc: previous,
             past: state.past.slice(0, -1),
             future: [state.doc, ...state.future].slice(0, MAX_HISTORY),
-            ...restoreFocus(previous, state.selectedId, state.activePageIndex),
+            ...restoreFocus(previous, state.selectedIds, state.activePageIndex),
           };
         }),
 
@@ -697,7 +847,7 @@ export const useDocumentStore = create<DocumentStore>()(
             doc: next,
             past: [...state.past, state.doc].slice(-MAX_HISTORY),
             future: rest,
-            ...restoreFocus(next, state.selectedId, state.activePageIndex),
+            ...restoreFocus(next, state.selectedIds, state.activePageIndex),
           };
         }),
     }),
