@@ -140,7 +140,9 @@
     "move_page_backward": "Déplacer avant",
     "move_page_forward": "Déplacer après",
     "page_name": "Nom de la page",
-    "duplicate_element": "Dupliquer l'élément"
+    "duplicate_element": "Dupliquer l'élément",
+    "png_hint_all": "Enregistre les {count} pages en images 300 ppp distinctes",
+    "png_building": "Export en cours…"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

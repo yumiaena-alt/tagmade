@@ -140,7 +140,9 @@
     "move_page_backward": "Move earlier",
     "move_page_forward": "Move later",
     "page_name": "Page name",
-    "duplicate_element": "Duplicate element"
+    "duplicate_element": "Duplicate element",
+    "png_hint_all": "Saves all {count} pages as separate 300dpi images",
+    "png_building": "Exporting…"
   },
   "Editor": {
     "loading": "Loading the editor",

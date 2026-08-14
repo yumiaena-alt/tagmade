@@ -4,6 +4,7 @@ import type { LabelDocument } from '@/utils/documentModel';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { buttonVariants } from '@/components/ui/buttonVariants';
+import { exportFileName } from '@/utils/exportFileName';
 import { cn } from '@/utils/Helpers';
 import { DocumentPdf } from './DocumentPdf';
 
@@ -12,12 +13,6 @@ type DocumentPdfButtonProps = {
   /** Used for the filename and the PDF's title metadata. */
   documentName: string;
 };
-
-function toFileName(name: string): string {
-  const safe = name.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '');
-
-  return `${safe || 'label'}.pdf`;
-}
 
 /**
  * Builds the vector PDF in the browser and downloads it.
@@ -46,7 +41,7 @@ export const DocumentPdfButton = ({
       const link = document.createElement('a');
 
       link.href = url;
-      link.download = toFileName(documentName);
+      link.download = exportFileName(documentName, 'pdf');
       link.click();
       URL.revokeObjectURL(url);
     } catch {

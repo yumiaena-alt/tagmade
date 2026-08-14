@@ -38,10 +38,51 @@ export function exportStagePng(currentPxPerMm: number): PngExport | null {
   }
 
   const pixelRatio = PRINT_DPMM / currentPxPerMm;
+  // The selection handles are Konva nodes on the same layer as the artwork, so
+  // without hiding them the indigo transform box is baked into the picture. An
+  // export is of the label, not of the editor looking at it.
+  const overlays = stage.find('Transformer').filter(node => node.visible());
 
-  return {
-    dataUrl: stage.toDataURL({ pixelRatio, mimeType: 'image/png' }),
-    widthPx: Math.round(stage.width() * pixelRatio),
-    heightPx: Math.round(stage.height() * pixelRatio),
-  };
+  overlays.forEach(node => node.visible(false));
+
+  try {
+    return {
+      dataUrl: stage.toDataURL({ pixelRatio, mimeType: 'image/png' }),
+      widthPx: Math.round(stage.width() * pixelRatio),
+      heightPx: Math.round(stage.height() * pixelRatio),
+    };
+  } finally {
+    overlays.forEach(node => node.visible(true));
+  }
+}
+
+/**
+ * How long to wait for a redraw before capturing anyway.
+ *
+ * A hidden tab never animates, and an export that hangs for ever because the
+ * operator switched away is worse than one captured a frame early.
+ */
+const PAINT_TIMEOUT_MS = 250;
+
+/**
+ * Resolves once the canvas has had a chance to redraw after a state change.
+ *
+ * Needed to export every page: each is captured by pointing the store at it and
+ * reading the same live stage, so the capture has to come after React has
+ * committed the new page and Konva has drawn it.
+ */
+export function nextCanvasPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (!settled) {
+        settled = true;
+        resolve();
+      }
+    };
+
+    // Two frames: one for React to commit, one for Konva to draw.
+    requestAnimationFrame(() => requestAnimationFrame(done));
+    setTimeout(done, PAINT_TIMEOUT_MS);
+  });
 }

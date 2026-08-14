@@ -140,7 +140,9 @@
     "move_page_backward": "앞으로 이동",
     "move_page_forward": "뒤로 이동",
     "page_name": "페이지 이름",
-    "duplicate_element": "선택 요소 복제"
+    "duplicate_element": "선택 요소 복제",
+    "png_hint_all": "모든 페이지({count}장)를 300dpi 이미지로 각각 저장합니다",
+    "png_building": "내보내는 중…"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",
