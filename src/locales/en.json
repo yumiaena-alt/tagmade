@@ -43,7 +43,7 @@
     "toolbar_label": "Element toolbar",
     "add_element": "Add {name}",
     "no_selection": "Click an element on the canvas to edit its properties here.",
-    "canvas_hint": "Click to select · drag to move · pull handles to resize · double-click text to retype",
+    "canvas_hint": "Click to select · drag to move · arrows nudge 1mm (Shift 5mm) · pull handles to resize · double-click text to retype",
     "font_size": "Font size",
     "bold": "Bold",
     "align": "Align",

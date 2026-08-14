@@ -43,7 +43,7 @@
     "toolbar_label": "Barre d'outils des éléments",
     "add_element": "Ajouter {name}",
     "no_selection": "Cliquez sur un élément du canevas pour modifier ses propriétés ici.",
-    "canvas_hint": "Cliquer pour sélectionner · glisser pour déplacer · poignées pour redimensionner · double-clic pour éditer",
+    "canvas_hint": "Cliquer pour sélectionner · glisser pour déplacer · flèches 1 mm (Maj 5 mm) · poignées pour redimensionner · double-clic pour éditer",
     "font_size": "Taille du texte",
     "bold": "Gras",
     "align": "Alignement",

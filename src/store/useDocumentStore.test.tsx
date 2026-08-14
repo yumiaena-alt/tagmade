@@ -172,6 +172,81 @@ describe('useDocumentStore', () => {
     });
   });
 
+  describe('nudgeElement', () => {
+    it('shifts an element by the delta', () => {
+      const before = elements().find(e => e.id === 'brand')!;
+
+      store().nudgeElement('brand', { x: 1, y: -1 });
+
+      expect(elements().find(e => e.id === 'brand')).toMatchObject({
+        x: before.x + 1,
+        y: before.y - 1,
+      });
+    });
+
+    it('holds the element inside the page', () => {
+      store().nudgeElement('brand', { x: -999, y: -999 });
+
+      const moved = elements().find(e => e.id === 'brand')!;
+
+      expect(moved.x).toBeGreaterThanOrEqual(0);
+      expect(moved.y).toBeGreaterThanOrEqual(0);
+    });
+
+    it('collapses a run of taps into one undo', () => {
+      // Down the page, where a 25mm-wide field on a 30mm page has room to
+      // move — sideways it hits the clamp after 2.5mm.
+      const before = elements().find(e => e.id === 'brand')!;
+
+      store().nudgeElement('brand', { x: 0, y: 1 });
+      store().nudgeElement('brand', { x: 0, y: 1 });
+      store().nudgeElement('brand', { x: 0, y: 1 });
+
+      expect(elements().find(e => e.id === 'brand')?.y).toBe(before.y + 3);
+
+      store().undo();
+
+      expect(elements().find(e => e.id === 'brand')?.y).toBe(before.y);
+    });
+
+    it('stops at the page edge rather than running past it', () => {
+      // 25mm wide on a 30mm page leaves exactly 5mm of travel.
+      store().nudgeElement('brand', { x: 1, y: 0 });
+      store().nudgeElement('brand', { x: 1, y: 0 });
+      store().nudgeElement('brand', { x: 1, y: 0 });
+
+      expect(elements().find(e => e.id === 'brand')?.x).toBe(5);
+    });
+
+    it('refuses to move a locked element', () => {
+      store().toggleElementLock('brand');
+      const locked = elements().find(e => e.id === 'brand')!;
+
+      store().nudgeElement('brand', { x: 5, y: 5 });
+
+      expect(elements().find(e => e.id === 'brand')).toMatchObject({
+        x: locked.x,
+        y: locked.y,
+      });
+    });
+
+    it('ignores an id that is not on this page', () => {
+      const before = elements().map(e => ({ ...e }));
+
+      store().nudgeElement('does-not-exist', { x: 1, y: 1 });
+
+      expect(elements()).toEqual(before);
+    });
+
+    it('moves only the element addressed', () => {
+      const other = elements().find(e => e.id === 'sku')!;
+
+      store().nudgeElement('brand', { x: 2, y: 2 });
+
+      expect(elements().find(e => e.id === 'sku')).toEqual(other);
+    });
+  });
+
   describe('locking and hiding', () => {
     it('locks and unlocks an element', () => {
       store().toggleElementLock('brand');

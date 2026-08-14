@@ -174,6 +174,15 @@ type DocumentStore = {
   /** Convenience for the layer inputs: sets whatever the element's content is. */
   readonly setElementContent: (id: string, content: string) => void;
   readonly moveElement: (id: string, position: { x: number; y: number }) => void;
+  /**
+   * Shifts an element by a millimetre delta, held inside the page.
+   *
+   * Separate from `moveElement` because of the history: a drag is one gesture
+   * and deserves one undo, but a nudge is a keypress an operator will repeat
+   * twenty times to close a gap. These coalesce, so undo steps back over the
+   * whole run rather than once per tap.
+   */
+  readonly nudgeElement: (id: string, delta: { x: number; y: number }) => void;
   readonly addElement: (type: AddableType) => void;
   /**
    * Adds an image already read as a data URL, at a point on the page.
@@ -458,6 +467,30 @@ export const useDocumentStore = create<DocumentStore>()(
             ),
             selectedId: copy.id,
           };
+        }),
+
+      nudgeElement: (id, delta) =>
+        set((state) => {
+          const page = pageAt(state.doc, state.activePageIndex);
+          const element = page.elements.find(item => item.id === id);
+
+          // A locked element is a guide to work over, so the keyboard must not
+          // shift it any more than the pointer can.
+          if (!element || element.locked) {
+            return state;
+          }
+
+          const at = clampElement(element, state.doc, {
+            x: element.x + delta.x,
+            y: element.y + delta.y,
+          });
+
+          return commit(
+            state,
+            mapElements(state.doc, state.activePageIndex, item =>
+              item.id === id ? { ...item, ...at } : item),
+            `nudge:${id}`,
+          );
         }),
 
       toggleElementLock: id =>

@@ -43,7 +43,7 @@
     "toolbar_label": "요소 도구모음",
     "add_element": "{name} 추가",
     "no_selection": "캔버스에서 요소를 클릭하면 여기에 속성이 나타납니다.",
-    "canvas_hint": "클릭해 선택 · 드래그로 이동 · 핸들로 크기 조절 · 텍스트는 더블클릭해 바로 수정",
+    "canvas_hint": "클릭해 선택 · 드래그로 이동 · 화살표로 1mm씩(Shift 5mm) · 핸들로 크기 조절 · 텍스트는 더블클릭해 바로 수정",
     "font_size": "글자 크기",
     "bold": "굵게",
     "align": "정렬",

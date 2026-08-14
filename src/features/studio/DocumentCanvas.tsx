@@ -47,6 +47,23 @@ const FONT = 'Inter, "Malgun Gothic", sans-serif';
 const SNAP_GUIDE = '#f43f5e';
 
 /**
+ * Arrow-key step, in millimetres, and the bigger one Shift asks for.
+ *
+ * A millimetre because that is the unit the whole document is in and the one a
+ * printer will quote back; anything finer is a number nobody chose. Shift takes
+ * the same step five times over, for crossing a label rather than closing a gap.
+ */
+const NUDGE_MM = 1;
+const NUDGE_FAR_MM = 5;
+
+const NUDGE_DIRECTIONS: Record<string, { x: number; y: number }> = {
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+};
+
+/**
  * True when two guide sets would draw the same lines.
  *
  * A drag fires a move event per pointer sample. Without this the canvas would
@@ -416,6 +433,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const updateElement = useDocumentStore(state => state.updateElement);
   const removeElement = useDocumentStore(state => state.removeElement);
   const duplicateElement = useDocumentStore(state => state.duplicateElement);
+  const nudgeElement = useDocumentStore(state => state.nudgeElement);
   const setElementContent = useDocumentStore(state => state.setElementContent);
 
   const transformerRef = useRef<Konva.Transformer>(null);
@@ -490,6 +508,20 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
         duplicateElement(selectedId);
       }
 
+      const direction = NUDGE_DIRECTIONS[event.key];
+
+      if (direction) {
+        // Otherwise the arrows scroll the workspace out from under the label.
+        event.preventDefault();
+
+        const step = event.shiftKey ? NUDGE_FAR_MM : NUDGE_MM;
+
+        nudgeElement(selectedId, {
+          x: direction.x * step,
+          y: direction.y * step,
+        });
+      }
+
       if (event.key === 'Escape') {
         select(null);
       }
@@ -498,7 +530,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
     window.addEventListener('keydown', onKeyDown);
 
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedId, removeElement, duplicateElement, select]);
+  }, [selectedId, removeElement, duplicateElement, nudgeElement, select]);
 
   const width = doc.widthMm * scale;
   const height = doc.heightMm * scale;
