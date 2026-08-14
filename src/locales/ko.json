@@ -139,7 +139,8 @@
     "delete_page": "페이지 삭제",
     "move_page_backward": "앞으로 이동",
     "move_page_forward": "뒤로 이동",
-    "page_name": "페이지 이름"
+    "page_name": "페이지 이름",
+    "duplicate_element": "선택 요소 복제"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

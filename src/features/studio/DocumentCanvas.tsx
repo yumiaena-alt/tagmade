@@ -406,6 +406,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const moveElement = useDocumentStore(state => state.moveElement);
   const updateElement = useDocumentStore(state => state.updateElement);
   const removeElement = useDocumentStore(state => state.removeElement);
+  const duplicateElement = useDocumentStore(state => state.duplicateElement);
   const setElementContent = useDocumentStore(state => state.setElementContent);
 
   const transformerRef = useRef<Konva.Transformer>(null);
@@ -473,6 +474,13 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
         removeElement(selectedId);
       }
 
+      // Ctrl/Cmd+D. The browser's own bookmark dialog has to be refused, or
+      // duplicating an element also opens it.
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        duplicateElement(selectedId);
+      }
+
       if (event.key === 'Escape') {
         select(null);
       }
@@ -481,7 +489,7 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
     window.addEventListener('keydown', onKeyDown);
 
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedId, removeElement, select]);
+  }, [selectedId, removeElement, duplicateElement, select]);
 
   const width = doc.widthMm * scale;
   const height = doc.heightMm * scale;

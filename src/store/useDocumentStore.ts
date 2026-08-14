@@ -28,6 +28,14 @@ const MAX_HISTORY = 60;
  */
 const COALESCE_MS = 700;
 
+/**
+ * How far a duplicate lands from its original, in millimetres.
+ *
+ * Small enough to read as "the same thing, again", large enough that the copy
+ * is visibly a second object on the smallest label the studio offers.
+ */
+const DUPLICATE_OFFSET_MM = 2;
+
 function templateDocument(id: string): LabelDocument {
   return findTemplate(id)?.document ?? findTemplate(DEFAULT_TEMPLATE_ID)!.document;
 }
@@ -176,6 +184,14 @@ type DocumentStore = {
   readonly addImage: (src: string, position: { x: number; y: number }) => void;
   /** Adds a care-symbol block for a composition, at the usual offset. */
   readonly addCareSymbols: (composition: string) => void;
+  /**
+   * Copies an element on top of itself, slightly offset, and selects the copy.
+   *
+   * The offset is the whole point: a copy landing exactly on its original looks
+   * like nothing happened, and the operator drags the original away believing
+   * it is the duplicate.
+   */
+  readonly duplicateElement: (id: string) => void;
   readonly removeElement: (id: string) => void;
   /**
    * Moves an element one place through the draw order.
@@ -408,6 +424,31 @@ export const useDocumentStore = create<DocumentStore>()(
           return {
             ...commit(state, addToPage(state.doc, state.activePageIndex, element)),
             selectedId: element.id,
+          };
+        }),
+
+      duplicateElement: id =>
+        set((state) => {
+          const page = pageAt(state.doc, state.activePageIndex);
+          const source = page.elements.find(element => element.id === id);
+
+          if (!source) {
+            return state;
+          }
+
+          const copy: DocElement = { ...source, id: nextElementId(source.type) };
+          const at = clampElement(copy, state.doc, {
+            x: source.x + DUPLICATE_OFFSET_MM,
+            y: source.y + DUPLICATE_OFFSET_MM,
+          });
+
+          return {
+            // Appended, so the copy sits on top of what it was copied from.
+            ...commit(
+              state,
+              addToPage(state.doc, state.activePageIndex, { ...copy, ...at }),
+            ),
+            selectedId: copy.id,
           };
         }),
 

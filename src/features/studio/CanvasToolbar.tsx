@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { AddableType } from '@/utils/documentModel';
 import {
   BarChartIcon,
+  CopyIcon,
   DividerHorizontalIcon,
   ImageIcon,
   SquareIcon,
@@ -66,6 +67,7 @@ export const CanvasToolbar = () => {
   const t = useTranslations('Studio');
   const addLabels = useAddElementLabels();
   const addElement = useDocumentStore(state => state.addElement);
+  const duplicateElement = useDocumentStore(state => state.duplicateElement);
   const removeElement = useDocumentStore(state => state.removeElement);
   const selectedId = useDocumentStore(state => state.selectedId);
 
@@ -106,6 +108,25 @@ export const CanvasToolbar = () => {
         })}
 
         <span aria-hidden="true" className="w-px shrink-0 bg-border" />
+
+        <button
+          type="button"
+          onClick={() => selectedId && duplicateElement(selectedId)}
+          disabled={selectedId === null}
+          aria-label={t('duplicate_element')}
+          title={t('duplicate_element')}
+          className={cn(
+            'shrink-0 p-1.5 transition-colors',
+            selectedId === null
+              ? 'cursor-not-allowed text-muted-foreground/40'
+              : `
+                cursor-pointer
+                hover:bg-accent
+              `,
+          )}
+        >
+          <CopyIcon className="size-4" />
+        </button>
 
         <button
           type="button"

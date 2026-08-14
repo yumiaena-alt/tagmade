@@ -96,6 +96,82 @@ describe('useDocumentStore', () => {
     });
   });
 
+  describe('duplicateElement', () => {
+    it('adds a copy and selects it, leaving the original alone', () => {
+      const before = elements().length;
+      const original = elements().find(e => e.id === 'brand')!;
+
+      store().duplicateElement('brand');
+
+      const copy = elements().at(-1)!;
+
+      expect(elements()).toHaveLength(before + 1);
+      expect(store().selectedId).toBe(copy.id);
+      expect(copy.id).not.toBe('brand');
+      expect(elements().find(e => e.id === 'brand')).toEqual(original);
+    });
+
+    it('offsets the copy so it is not hidden behind the original', () => {
+      const original = elements().find(e => e.id === 'brand')!;
+
+      store().duplicateElement('brand');
+
+      const copy = elements().at(-1)!;
+
+      expect(copy.x).toBeGreaterThan(original.x);
+      expect(copy.y).toBeGreaterThan(original.y);
+    });
+
+    it('carries the properties over', () => {
+      store().updateElement('brand', { fontSize: 7, bold: true });
+      store().duplicateElement('brand');
+
+      expect(elements().at(-1)).toMatchObject({
+        fontSize: 7,
+        bold: true,
+        text: 'BVRI',
+      });
+    });
+
+    it('keeps the copy on the page', () => {
+      store().moveElement('brand', { x: 99, y: 99 });
+      store().duplicateElement('brand');
+
+      const copy = elements().at(-1)!;
+
+      expect(copy.x).toBeLessThanOrEqual(store().doc.widthMm);
+      expect(copy.y).toBeLessThanOrEqual(store().doc.heightMm);
+    });
+
+    it('copies onto the page being edited, not the first one', () => {
+      store().addPage();
+      store().addElement('qr');
+      const id = store().selectedId!;
+
+      store().duplicateElement(id);
+
+      expect(store().doc.pages[0]!.elements.some(e => e.type === 'qr')).toBe(false);
+      expect(store().doc.pages[1]!.elements).toHaveLength(2);
+    });
+
+    it('ignores an id that is not on this page', () => {
+      const before = elements().length;
+
+      store().duplicateElement('does-not-exist');
+
+      expect(elements()).toHaveLength(before);
+    });
+
+    it('is a single undo', () => {
+      const before = elements().length;
+
+      store().duplicateElement('brand');
+      store().undo();
+
+      expect(elements()).toHaveLength(before);
+    });
+  });
+
   describe('editing', () => {
     it('sets content on the addressed element only', () => {
       store().setElementContent('brand', 'ACME');
