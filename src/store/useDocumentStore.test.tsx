@@ -172,6 +172,75 @@ describe('useDocumentStore', () => {
     });
   });
 
+  describe('locking and hiding', () => {
+    it('locks and unlocks an element', () => {
+      store().toggleElementLock('brand');
+
+      expect(elements().find(e => e.id === 'brand')?.locked).toBe(true);
+
+      store().toggleElementLock('brand');
+
+      expect(elements().find(e => e.id === 'brand')?.locked).toBe(false);
+    });
+
+    it('hides and shows an element', () => {
+      store().toggleElementHidden('brand');
+
+      expect(elements().find(e => e.id === 'brand')?.hidden).toBe(true);
+
+      store().toggleElementHidden('brand');
+
+      expect(elements().find(e => e.id === 'brand')?.hidden).toBe(false);
+    });
+
+    it('keeps a hidden element in the page so it can be brought back', () => {
+      const before = elements().length;
+
+      store().toggleElementHidden('brand');
+
+      expect(elements()).toHaveLength(before);
+    });
+
+    it('drops the selection when the selected element is locked', () => {
+      store().select('brand');
+      store().toggleElementLock('brand');
+
+      expect(store().selectedId).toBeNull();
+    });
+
+    it('drops the selection when the selected element is hidden', () => {
+      store().select('brand');
+      store().toggleElementHidden('brand');
+
+      expect(store().selectedId).toBeNull();
+    });
+
+    it('leaves a different selection alone', () => {
+      store().select('sku');
+      store().toggleElementLock('brand');
+
+      expect(store().selectedId).toBe('sku');
+    });
+
+    it('is undoable', () => {
+      store().toggleElementHidden('brand');
+      store().undo();
+
+      expect(elements().find(e => e.id === 'brand')?.hidden).toBeFalsy();
+    });
+
+    it('touches only the page being edited', () => {
+      store().duplicatePage();
+      store().selectPage(0);
+      const copyId = store().doc.pages[1]!.elements[0]!.id;
+
+      store().toggleElementHidden('brand');
+
+      expect(store().doc.pages[1]!.elements.find(e => e.id === copyId)?.hidden)
+        .toBeFalsy();
+    });
+  });
+
   describe('editing', () => {
     it('sets content on the addressed element only', () => {
       store().setElementContent('brand', 'ACME');

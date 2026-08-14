@@ -142,7 +142,11 @@
     "page_name": "Page name",
     "duplicate_element": "Duplicate element",
     "png_hint_all": "Saves all {count} pages as separate 300dpi images",
-    "png_building": "Exporting…"
+    "png_building": "Exporting…",
+    "lock_element": "Lock element",
+    "unlock_element": "Unlock element",
+    "hide_element": "Hide element",
+    "show_element": "Show element"
   },
   "Editor": {
     "loading": "Loading the editor",

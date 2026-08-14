@@ -142,7 +142,11 @@
     "page_name": "페이지 이름",
     "duplicate_element": "선택 요소 복제",
     "png_hint_all": "모든 페이지({count}장)를 300dpi 이미지로 각각 저장합니다",
-    "png_building": "내보내는 중…"
+    "png_building": "내보내는 중…",
+    "lock_element": "요소 잠그기",
+    "unlock_element": "잠금 해제",
+    "hide_element": "요소 숨기기",
+    "show_element": "요소 보이기"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

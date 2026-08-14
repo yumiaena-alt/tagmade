@@ -1,7 +1,14 @@
 'use client';
 
 import type { TextAlign } from '@/utils/documentModel';
-import { ArrowDownIcon, ArrowUpIcon } from '@radix-ui/react-icons';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  EyeNoneIcon,
+  EyeOpenIcon,
+  LockClosedIcon,
+  LockOpen1Icon,
+} from '@radix-ui/react-icons';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { CareSummary } from '@/features/label/CareSummary';
@@ -63,6 +70,8 @@ export const ElementsPanel = () => {
   const updateElement = useDocumentStore(state => state.updateElement);
   const removeElement = useDocumentStore(state => state.removeElement);
   const reorderElement = useDocumentStore(state => state.reorderElement);
+  const toggleElementLock = useDocumentStore(state => state.toggleElementLock);
+  const toggleElementHidden = useDocumentStore(state => state.toggleElementHidden);
 
   const applyImageFile = async (elementId: string, file: File) => {
     const result = await readImageFile(file);
@@ -144,6 +153,40 @@ export const ElementsPanel = () => {
                           className={layerButtonClass(isBack)}
                         >
                           <ArrowDownIcon className="size-3" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleElementHidden(element.id)}
+                          aria-pressed={Boolean(element.hidden)}
+                          aria-label={
+                            element.hidden ? t('show_element') : t('hide_element')
+                          }
+                          title={
+                            element.hidden ? t('show_element') : t('hide_element')
+                          }
+                          className={layerButtonClass(false)}
+                        >
+                          {element.hidden
+                            ? <EyeNoneIcon className="size-3" />
+                            : <EyeOpenIcon className="size-3" />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleElementLock(element.id)}
+                          aria-pressed={Boolean(element.locked)}
+                          aria-label={
+                            element.locked ? t('unlock_element') : t('lock_element')
+                          }
+                          title={
+                            element.locked ? t('unlock_element') : t('lock_element')
+                          }
+                          className={layerButtonClass(false)}
+                        >
+                          {element.locked
+                            ? <LockClosedIcon className="size-3" />
+                            : <LockOpen1Icon className="size-3" />}
                         </button>
                       </div>
 

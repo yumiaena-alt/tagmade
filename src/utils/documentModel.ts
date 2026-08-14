@@ -48,6 +48,16 @@ type ElementBase = {
   readonly labelKey: ElementLabelKey;
   /** Locked elements are guides — visible, but not selectable or draggable. */
   readonly locked?: boolean;
+  /**
+   * Hidden elements are drawn nowhere: not on the canvas, not in a thumbnail,
+   * not in the PDF, not in the PNG.
+   *
+   * Deliberately not "hidden on screen only". An operator who hides something
+   * has decided it is not part of this label, and finding it back on the
+   * printed sheet would be the worst possible surprise. The layer list still
+   * lists it, which is the only way to bring it back.
+   */
+  readonly hidden?: boolean;
 };
 
 export type TextAlign = 'left' | 'center' | 'right';
@@ -317,6 +327,19 @@ export function textLines(element: {
   }
 
   return lines;
+}
+
+/**
+ * The elements a renderer should actually draw.
+ *
+ * Shared by all three for the same reason `textLines` is: the alternative is
+ * each renderer filtering for itself, and one that forgot would keep a hidden
+ * element in the printed PDF while the canvas showed it gone.
+ */
+export function visibleElements(
+  elements: readonly DocElement[],
+): readonly DocElement[] {
+  return elements.filter(element => !element.hidden);
 }
 
 /**

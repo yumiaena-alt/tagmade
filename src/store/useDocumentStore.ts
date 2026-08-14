@@ -192,6 +192,14 @@ type DocumentStore = {
    * it is the duplicate.
    */
   readonly duplicateElement: (id: string) => void;
+  /**
+   * Locks or unlocks an element — a locked one stays visible but stops
+   * answering the pointer, which is what makes a frame or a punch hole usable
+   * as a guide to work over.
+   */
+  readonly toggleElementLock: (id: string) => void;
+  /** Shows or hides an element. Hidden means hidden everywhere, print included. */
+  readonly toggleElementHidden: (id: string) => void;
   readonly removeElement: (id: string) => void;
   /**
    * Moves an element one place through the draw order.
@@ -451,6 +459,32 @@ export const useDocumentStore = create<DocumentStore>()(
             selectedId: copy.id,
           };
         }),
+
+      toggleElementLock: id =>
+        set(state => ({
+          ...commit(
+            state,
+            mapElements(state.doc, state.activePageIndex, element =>
+              element.id === id
+                ? { ...element, locked: !element.locked }
+                : element),
+          ),
+          // A locked element cannot be clicked, so leaving the handles on it
+          // would strand a selection the operator has no way to let go of.
+          selectedId: state.selectedId === id ? null : state.selectedId,
+        })),
+
+      toggleElementHidden: id =>
+        set(state => ({
+          ...commit(
+            state,
+            mapElements(state.doc, state.activePageIndex, element =>
+              element.id === id
+                ? { ...element, hidden: !element.hidden }
+                : element),
+          ),
+          selectedId: state.selectedId === id ? null : state.selectedId,
+        })),
 
       removeElement: id =>
         set(state => ({

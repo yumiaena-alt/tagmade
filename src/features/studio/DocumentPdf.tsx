@@ -19,7 +19,7 @@ import {
 } from '@/features/label/careSymbolShapes';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { textLines } from '@/utils/documentModel';
+import { textLines, visibleElements } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
@@ -331,7 +331,7 @@ export const DocumentPdf = ({ doc, title }: DocumentPdfProps) => {
             color: INK,
           }}
         >
-          {page.elements.map(element => (
+          {visibleElements(page.elements).map(element => (
             <ElementPdf key={element.id} element={element} />
           ))}
         </Page>

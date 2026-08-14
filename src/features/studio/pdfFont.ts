@@ -1,6 +1,7 @@
 import type { LabelDocument } from '@/utils/documentModel';
 import type { FontFace, FontId } from '@/utils/fonts';
 import { Font } from '@react-pdf/renderer';
+import { visibleElements } from '@/utils/documentModel';
 import { DEFAULT_FONT_ID, fontById } from '@/utils/fonts';
 
 /** Family every page falls back to, and the one Korean text needs. */
@@ -45,7 +46,8 @@ export function registerPdfFonts(doc: LabelDocument): void {
   // Every page, not just the one on screen: a face used only on page two still
   // has to be in the file.
   for (const page of doc.pages) {
-    for (const element of page.elements) {
+    // Hidden text is not drawn, so its face would be megabytes of dead weight.
+    for (const element of visibleElements(page.elements)) {
       if (element.type === 'text') {
         register(fontById(element.fontId));
       }

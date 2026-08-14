@@ -5,6 +5,7 @@ import {
   elementContent,
   elementSize,
   resizedElement,
+  visibleElements,
   withContent,
 } from './documentModel';
 
@@ -240,5 +241,37 @@ describe('resizedElement', () => {
     };
 
     expect(resizedElement(care, 1.5, 1)).toEqual({ glyphWidth: 6 });
+  });
+});
+
+describe('visibleElements', () => {
+  const shown: DocElement = {
+    type: 'rect',
+    id: 'shown',
+    labelKey: 'field_shape',
+    x: 0,
+    y: 0,
+    width: 4,
+    height: 4,
+  };
+  const gone: DocElement = { ...shown, id: 'gone', hidden: true };
+
+  it('drops the hidden ones', () => {
+    expect(visibleElements([shown, gone]).map(e => e.id)).toEqual(['shown']);
+  });
+
+  it('keeps the draw order of what is left', () => {
+    const third: DocElement = { ...shown, id: 'third' };
+
+    expect(visibleElements([shown, gone, third]).map(e => e.id))
+      .toEqual(['shown', 'third']);
+  });
+
+  it('treats an element with no flag as visible', () => {
+    expect(visibleElements([shown])).toHaveLength(1);
+  });
+
+  it('keeps a locked element — locked is not hidden', () => {
+    expect(visibleElements([{ ...shown, locked: true }])).toHaveLength(1);
   });
 });

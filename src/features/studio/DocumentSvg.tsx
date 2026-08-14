@@ -7,7 +7,7 @@ import {
 } from '@/features/label/careSymbolShapes';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { pageAt, textLines } from '@/utils/documentModel';
+import { pageAt, textLines, visibleElements } from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
@@ -332,7 +332,7 @@ export const DocumentSvg = ({
       height={doc.heightMm}
       fill={doc.backgroundColor ?? PAGE}
     />
-    {pageAt(doc, pageIndex).elements.map(element => (
+    {visibleElements(pageAt(doc, pageIndex).elements).map(element => (
       <ElementSvg key={element.id} element={element} />
     ))}
   </svg>

@@ -20,7 +20,13 @@ import {
 } from '@/utils/alignmentGuides';
 import { code128Symbol } from '@/utils/barcodeMatrix';
 import { buildCareGuide } from '@/utils/careRules';
-import { clampElement, elementSize, resizedElement, textLines } from '@/utils/documentModel';
+import {
+  clampElement,
+  elementSize,
+  resizedElement,
+  textLines,
+  visibleElements,
+} from '@/utils/documentModel';
 import { parseFabricComposition } from '@/utils/fabricParser';
 import { fontById } from '@/utils/fonts';
 import { qrMatrix, qrRects } from '@/utils/qrMatrix';
@@ -400,7 +406,10 @@ type DocumentCanvasProps = {
  */
 export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const doc = useDocumentStore(state => state.doc);
-  const elements = useActiveElements();
+  // The layer list gets the whole page — hiding something has to be reversible,
+  // and the list is the only place it can be brought back from. The canvas gets
+  // only what is meant to be drawn.
+  const elements = visibleElements(useActiveElements());
   const selectedId = useDocumentStore(state => state.selectedId);
   const select = useDocumentStore(state => state.select);
   const moveElement = useDocumentStore(state => state.moveElement);
