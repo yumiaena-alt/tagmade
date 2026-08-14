@@ -50,12 +50,18 @@ type ViewStore = {
   readonly zoom: number;
   readonly unit: DisplayUnit;
   readonly showRulers: boolean;
+  /** Spacing of the snap grid, in millimetres. */
+  readonly gridStepMm: number;
+  /** Whether a drag is pulled onto the grid at all. */
+  readonly snapToGrid: boolean;
   /** True when the view should refit the artwork on the next layout pass. */
   readonly fitRequested: boolean;
   readonly setZoom: (zoom: number) => void;
   readonly zoomBy: (factor: number) => void;
   readonly setUnit: (unit: DisplayUnit) => void;
   readonly toggleRulers: () => void;
+  readonly setGridStep: (stepMm: number) => void;
+  readonly toggleGridSnap: () => void;
   readonly requestFit: () => void;
   readonly clearFitRequest: () => void;
 };
@@ -64,12 +70,32 @@ function clampZoom(zoom: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
 }
 
+/**
+ * Grid spacings offered in the panel, in millimetres.
+ *
+ * Round numbers a label is actually laid out on. A step is never zero, because
+ * snapping to a grid of nothing would divide by it.
+ */
+export const GRID_STEPS_MM = [1, 2, 5, 10] as const;
+
+const DEFAULT_GRID_STEP_MM = 5;
+
+/** Falls back to the default when a stored or typed step is unusable. */
+function clampGridStep(stepMm: number): number {
+  return Number.isFinite(stepMm) && stepMm > 0 ? stepMm : DEFAULT_GRID_STEP_MM;
+}
+
 export const useViewStore = create<ViewStore>()(
   persist(
     set => ({
       zoom: 1,
       unit: 'mm',
       showRulers: true,
+      gridStepMm: DEFAULT_GRID_STEP_MM,
+      // Off by default: element snapping already lines things up with what is
+      // on the page, and a grid nobody asked for moves artwork that was placed
+      // to a supplier's measurement.
+      snapToGrid: false,
       fitRequested: true,
 
       setZoom: zoom => set({ zoom: clampZoom(zoom), fitRequested: false }),
@@ -80,6 +106,8 @@ export const useViewStore = create<ViewStore>()(
         })),
       setUnit: unit => set({ unit }),
       toggleRulers: () => set(state => ({ showRulers: !state.showRulers })),
+      setGridStep: stepMm => set({ gridStepMm: clampGridStep(stepMm) }),
+      toggleGridSnap: () => set(state => ({ snapToGrid: !state.snapToGrid })),
       requestFit: () => set({ fitRequested: true }),
       clearFitRequest: () => set({ fitRequested: false }),
     }),
@@ -90,7 +118,19 @@ export const useViewStore = create<ViewStore>()(
         zoom: state.zoom,
         unit: state.unit,
         showRulers: state.showRulers,
+        gridStepMm: state.gridStepMm,
+        snapToGrid: state.snapToGrid,
       }),
+      // A step saved as zero or missing would divide by nothing on the way in.
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<ViewStore> | undefined;
+
+        return {
+          ...current,
+          ...saved,
+          gridStepMm: clampGridStep(saved?.gridStepMm ?? DEFAULT_GRID_STEP_MM),
+        };
+      },
     },
   ),
 );

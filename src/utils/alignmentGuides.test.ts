@@ -1,6 +1,6 @@
 import type { DocElement } from './documentModel';
 import { describe, expect, it } from 'vitest';
-import { alignmentTargets, snapEdge, snapPosition } from './alignmentGuides';
+import { alignmentTargets, snapEdge, snapPosition, snapToGrid } from './alignmentGuides';
 
 const PAGE = { widthMm: 100, heightMm: 100 };
 
@@ -205,5 +205,64 @@ describe('snapEdge', () => {
 
   it('snaps exactly on a line to no movement at all', () => {
     expect(snapEdge(50, targets, 1)).toEqual({ shift: 0, at: 50 });
+  });
+});
+
+describe('snapToGrid', () => {
+  it('rounds to the nearest multiple', () => {
+    expect(snapToGrid(12.4, 5)).toBe(10);
+    expect(snapToGrid(12.6, 5)).toBe(15);
+  });
+
+  it('leaves a value already on the grid alone', () => {
+    expect(snapToGrid(15, 5)).toBe(15);
+  });
+
+  it('rounds a negative value the same way', () => {
+    expect(snapToGrid(-12.4, 5)).toBe(-10);
+  });
+
+  it('is no grid at all when the step is zero or less', () => {
+    expect(snapToGrid(12.4, 0)).toBe(12.4);
+    expect(snapToGrid(12.4, -5)).toBe(12.4);
+  });
+});
+
+describe('snapPosition with a grid', () => {
+  it('falls back to the grid when nothing lines up', () => {
+    const result = snapPosition(
+      rect('moving', 0, 0),
+      [],
+      PAGE,
+      { x: 12.4, y: 17.7 },
+      1,
+      5,
+    );
+
+    expect(result.position).toEqual({ x: 10, y: 20 });
+    expect(result.guides).toEqual([]);
+  });
+
+  it('lets an element win the axis it claimed', () => {
+    const result = snapPosition(
+      rect('moving', 0, 0),
+      [rect('other', 32, 70)],
+      PAGE,
+      { x: 32.3, y: 17.7 },
+      1,
+      5,
+    );
+
+    // 32 is a neighbour's edge and not on the 5mm grid: the neighbour wins x,
+    // and the grid still takes y, which nothing else claimed.
+    expect(result.position.x).toBeCloseTo(32);
+    expect(result.position.y).toBe(20);
+    expect(result.guides).toEqual([{ orientation: 'vertical', at: 32 }]);
+  });
+
+  it('ignores the grid when no step is given', () => {
+    const result = snapPosition(rect('moving', 0, 0), [], PAGE, { x: 12.4, y: 17.7 }, 1);
+
+    expect(result.position).toEqual({ x: 12.4, y: 17.7 });
   });
 });

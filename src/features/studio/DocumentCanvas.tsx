@@ -12,6 +12,7 @@ import {
   PROHIBITION_STROKE,
 } from '@/features/label/careSymbolShapes';
 import { useActiveElements, useDocumentStore } from '@/store/useDocumentStore';
+import { useViewStore } from '@/store/useViewStore';
 import {
   alignmentTargets,
   SNAP_TOLERANCE_PX,
@@ -435,6 +436,8 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
   const duplicateElement = useDocumentStore(state => state.duplicateElement);
   const nudgeElement = useDocumentStore(state => state.nudgeElement);
   const setElementContent = useDocumentStore(state => state.setElementContent);
+  const gridStepMm = useViewStore(state => state.gridStepMm);
+  const gridSnapping = useViewStore(state => state.snapToGrid);
 
   const transformerRef = useRef<Konva.Transformer>(null);
   const nodesRef = useRef(new Map<string, Konva.Group>());
@@ -567,6 +570,8 @@ export const DocumentCanvas = ({ scale }: DocumentCanvasProps) => {
       // A pointing tolerance, so it is fixed on screen and shrinks in
       // millimetres as the operator zooms in.
       SNAP_TOLERANCE_PX / scale,
+      // The grid is the fallback, and only on an axis nothing else claimed.
+      gridSnapping ? gridStepMm : 0,
     );
 
     setGuides(current =>

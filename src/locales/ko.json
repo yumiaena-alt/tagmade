@@ -146,7 +146,9 @@
     "lock_element": "요소 잠그기",
     "unlock_element": "잠금 해제",
     "hide_element": "요소 숨기기",
-    "show_element": "요소 보이기"
+    "show_element": "요소 보이기",
+    "grid_snap_label": "격자에 맞춤",
+    "grid_step_label": "격자 간격"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",

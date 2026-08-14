@@ -129,6 +129,20 @@ export function alignmentTargets(
 }
 
 /**
+ * Rounds a millimetre value to the nearest multiple of a grid step.
+ *
+ * Applied only where element snapping found nothing: a position that already
+ * lines up with a neighbour is the better answer, and rounding it afterwards
+ * would pull it back off the very line the operator was aiming at.
+ *
+ * A step of zero or less is no grid at all, and returns the value untouched
+ * rather than dividing by it.
+ */
+export function snapToGrid(value: number, stepMm: number): number {
+  return stepMm > 0 ? Math.round(value / stepMm) * stepMm : value;
+}
+
+/**
  * Pulls a single edge onto whatever it is nearly lined up with.
  *
  * A resize moves one edge and leaves the opposite one where it is, so unlike a
@@ -156,6 +170,10 @@ export function snapEdge(
  * here, or every position snaps to where it already is.
  * @param tolerance In millimetres. Derive it from `SNAP_TOLERANCE_PX` and the
  * canvas scale rather than hardcoding a distance.
+ * @param gridStepMm Falls back to a grid on whichever axis found nothing to
+ * line up with. Zero — the default — is no grid. Per axis rather than for the
+ * whole position, so an element can hold a neighbour's edge horizontally while
+ * still landing on the grid vertically.
  */
 export function snapPosition(
   moving: DocElement,
@@ -163,6 +181,7 @@ export function snapPosition(
   page: Pick<LabelDocument, 'widthMm' | 'heightMm'>,
   position: { x: number; y: number },
   tolerance: number,
+  gridStepMm = 0,
 ): SnapResult {
   const { width, height } = elementSize(moving);
   const targets = alignmentTargets(others, page);
@@ -182,8 +201,8 @@ export function snapPosition(
 
   return {
     position: {
-      x: position.x + (x?.shift ?? 0),
-      y: position.y + (y?.shift ?? 0),
+      x: x ? position.x + x.shift : snapToGrid(position.x, gridStepMm),
+      y: y ? position.y + y.shift : snapToGrid(position.y, gridStepMm),
     },
     guides,
   };

@@ -146,7 +146,9 @@
     "lock_element": "Lock element",
     "unlock_element": "Unlock element",
     "hide_element": "Hide element",
-    "show_element": "Show element"
+    "show_element": "Show element",
+    "grid_snap_label": "Snap to grid",
+    "grid_step_label": "Grid spacing"
   },
   "Editor": {
     "loading": "Loading the editor",

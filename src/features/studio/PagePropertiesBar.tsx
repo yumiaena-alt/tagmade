@@ -6,6 +6,7 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import {
   DISPLAY_UNITS,
   fromMm,
+  GRID_STEPS_MM,
   toMm,
   useViewStore,
 } from '@/store/useViewStore';
@@ -46,6 +47,10 @@ export const PagePropertiesBar = () => {
   const setUnit = useViewStore(state => state.setUnit);
   const showRulers = useViewStore(state => state.showRulers);
   const toggleRulers = useViewStore(state => state.toggleRulers);
+  const gridStepMm = useViewStore(state => state.gridStepMm);
+  const snapToGrid = useViewStore(state => state.snapToGrid);
+  const setGridStep = useViewStore(state => state.setGridStep);
+  const toggleGridSnap = useViewStore(state => state.toggleGridSnap);
   const requestFit = useViewStore(state => state.requestFit);
 
   const unitLabels: Record<DisplayUnit, string> = {
@@ -207,6 +212,42 @@ export const PagePropertiesBar = () => {
             />
             {t('rulers_label')}
           </label>
+        </BarGroup>
+
+        <BarGroup>
+          <label className={`
+            flex cursor-pointer items-center gap-1.5 text-xs
+            text-muted-foreground
+          `}
+          >
+            <input
+              type="checkbox"
+              checked={snapToGrid}
+              onChange={toggleGridSnap}
+              className="cursor-pointer"
+            />
+            {t('grid_snap_label')}
+          </label>
+
+          <select
+            value={gridStepMm}
+            onChange={event => setGridStep(Number(event.target.value))}
+            disabled={!snapToGrid}
+            aria-label={t('grid_step_label')}
+            title={t('grid_step_label')}
+            className={cn(
+              CONTROL_CLASS,
+              'w-16',
+              snapToGrid ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
+            )}
+          >
+            {GRID_STEPS_MM.map(step => (
+              <option key={step} value={step}>
+                {step}
+                mm
+              </option>
+            ))}
+          </select>
         </BarGroup>
       </div>
 
