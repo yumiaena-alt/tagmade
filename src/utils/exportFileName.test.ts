@@ -27,6 +27,11 @@ describe('exportFileName', () => {
     expect(exportFileName('my label/2026?', 'pdf')).toBe('my-label-2026.pdf');
   });
 
+  it('keeps letters that are not ASCII', () => {
+    expect(exportFileName('2026 SS 행택', 'json')).toBe('2026-SS-행택.json');
+    expect(exportFileName('étiquette', 'pdf')).toBe('étiquette.pdf');
+  });
+
   it('falls back when the base has nothing usable left', () => {
     expect(exportFileName('///', 'png')).toBe('label.png');
     expect(exportFileName('', 'pdf')).toBe('label.pdf');

@@ -130,7 +130,7 @@
     "layer_backward": "Reculer",
     "document_name": "Nom du document",
     "untitled_document": "Sans titre",
-    "my_templates_auto_note": "Toute modification est enregistrée ici automatiquement.",
+    "my_templates_auto_note": "Toute modification enregistre votre travail sur cet appareil. Téléchargez-le en fichier à tout moment.",
     "my_template_name_required": "Veuillez saisir un nom.",
     "pages_label": "Pages",
     "page_number": "Page {n}",
@@ -148,7 +148,9 @@
     "hide_element": "Masquer",
     "show_element": "Afficher",
     "grid_snap_label": "Aligner sur la grille",
-    "grid_step_label": "Pas de la grille"
+    "grid_step_label": "Pas de la grille",
+    "download_my_template": "Télécharger {name}",
+    "my_template_saved_at": "Enregistré le {at}"
   },
   "Editor": {
     "loading": "Chargement de l'éditeur",

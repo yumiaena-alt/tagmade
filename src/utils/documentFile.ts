@@ -18,6 +18,7 @@ import type {
   LabelPage,
 } from './documentModel';
 import { toPagedDocument } from './documentModel';
+import { exportFileName } from './exportFileName';
 
 /**
  * Bumped only if the shape changes in a way older files cannot satisfy.
@@ -197,9 +198,14 @@ export function parseDocument(text: string): ParseResult {
     : { ok: false, reason: 'not_a_document' };
 }
 
-/** Filename for a saved document: the template id, made safe for a filesystem. */
+/**
+ * Filename for a saved document: what the operator named it.
+ *
+ * The name is what they will look for in a downloads folder months later. Only
+ * a document that was never named falls back to the template id, and an
+ * auto-recorded one always has a name — so a re-download does not arrive as
+ * `user-mf3k2-1.json`, which is what it used to do.
+ */
 export function documentFileName(doc: LabelDocument): string {
-  const safe = doc.templateId.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '');
-
-  return `${safe || 'label'}.json`;
+  return exportFileName(doc.name?.trim() || doc.templateId, 'json');
 }

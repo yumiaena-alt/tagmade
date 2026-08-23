@@ -10,6 +10,7 @@ import {
   parseDocument,
   serializeDocument,
 } from '@/utils/documentFile';
+import { downloadBlob } from './downloadBlob';
 
 const BUTTON_CLASS = `
   flex cursor-pointer items-center gap-1 rounded-md border border-border px-2
@@ -40,13 +41,8 @@ export const DocumentIo = () => {
     const blob = new Blob([serializeDocument(doc)], {
       type: 'application/json',
     });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
 
-    link.href = url;
-    link.download = documentFileName(doc);
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, documentFileName(doc));
   };
 
   const handleFile = async (file: File) => {

@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/buttonVariants';
 import { exportFileName } from '@/utils/exportFileName';
 import { cn } from '@/utils/Helpers';
 import { DocumentPdf } from './DocumentPdf';
+import { downloadBlob } from './downloadBlob';
 
 type DocumentPdfButtonProps = {
   doc: LabelDocument;
@@ -37,13 +38,7 @@ export const DocumentPdfButton = ({
         <DocumentPdf doc={doc} title={documentName} />,
       ).toBlob();
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      link.href = url;
-      link.download = exportFileName(documentName, 'pdf');
-      link.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, exportFileName(documentName, 'pdf'));
     } catch {
       setHasError(true);
     } finally {

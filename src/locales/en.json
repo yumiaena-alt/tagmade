@@ -130,7 +130,7 @@
     "layer_backward": "Send backward",
     "document_name": "Document name",
     "untitled_document": "Untitled",
-    "my_templates_auto_note": "Editing anything records it here automatically.",
+    "my_templates_auto_note": "Editing saves your work to this device by itself. Download it as a file any time.",
     "my_template_name_required": "Please enter a name.",
     "pages_label": "Pages",
     "page_number": "Page {n}",
@@ -148,7 +148,9 @@
     "hide_element": "Hide element",
     "show_element": "Show element",
     "grid_snap_label": "Snap to grid",
-    "grid_step_label": "Grid spacing"
+    "grid_step_label": "Grid spacing",
+    "download_my_template": "Download {name}",
+    "my_template_saved_at": "Saved {at}"
   },
   "Editor": {
     "loading": "Loading the editor",

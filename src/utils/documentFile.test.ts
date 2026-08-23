@@ -164,8 +164,18 @@ describe('parseDocument', () => {
 });
 
 describe('documentFileName', () => {
-  it('names the file after the template', () => {
+  it('names the file after the document', () => {
+    expect(documentFileName({ ...DOC, name: '2026 SS 행택' }))
+      .toBe('2026-SS-행택.json');
+  });
+
+  it('names the file after the template when the document has no name', () => {
     expect(documentFileName(DOC)).toBe('care-label-standard.json');
+  });
+
+  it('ignores a name that is only whitespace', () => {
+    expect(documentFileName({ ...DOC, name: '   ' }))
+      .toBe('care-label-standard.json');
   });
 
   it('strips characters a filesystem would reject', () => {

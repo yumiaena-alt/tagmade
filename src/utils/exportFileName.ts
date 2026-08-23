@@ -7,9 +7,15 @@
  * repeated name is a support question waiting to happen.
  */
 
-/** What a filesystem will take: word characters, dots and dashes. */
+/**
+ * What a filesystem will take: letters, digits, dots and dashes.
+ *
+ * Letters means any script, not `\w`. `\w` is ASCII, so a label named
+ * 행택 came out as `label.json` — every Korean document downloading under the
+ * same anonymous name, which is the opposite of what a filename is for.
+ */
 function safe(name: string): string {
-  return name.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '');
+  return name.replace(/[^\p{L}\p{N}._-]+/gu, '-').replace(/^-+|-+$/g, '');
 }
 
 export type ExportPage = {

@@ -130,7 +130,7 @@
     "layer_backward": "뒤로 보내기",
     "document_name": "문서 이름",
     "untitled_document": "제목 없음",
-    "my_templates_auto_note": "편집을 시작하면 자동으로 여기에 기록됩니다.",
+    "my_templates_auto_note": "편집을 시작하면 이 기기에 자동 저장됩니다. 언제든 파일로 내려받을 수 있습니다.",
     "my_template_name_required": "이름을 입력해 주세요.",
     "pages_label": "페이지",
     "page_number": "{n}쪽",
@@ -148,7 +148,9 @@
     "hide_element": "요소 숨기기",
     "show_element": "요소 보이기",
     "grid_snap_label": "격자에 맞춤",
-    "grid_step_label": "격자 간격"
+    "grid_step_label": "격자 간격",
+    "download_my_template": "{name} 내려받기",
+    "my_template_saved_at": "{at} 저장됨"
   },
   "Editor": {
     "loading": "에디터를 불러오는 중입니다",
