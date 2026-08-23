@@ -81,7 +81,7 @@ vercel deploy --prod
 
 | 항목 | 상태 |
 | --- | --- |
-| 테스트 | 261개 통과 (node 유닛 + chromium 브라우저) |
+| 테스트 | 263개 통과 (node 유닛 + chromium 브라우저) |
 | 타입·lint·i18n·knip·build | 전부 통과 |
 | 배포 | 자동, 정상 |
 
@@ -272,6 +272,9 @@ vercel deploy --prod
     합니다. 이미 쓴 공간이라 비용이 없고, 옛 빌드나 IndexedDB를 막아둔 브라우저는
     아직 그쪽을 봅니다. 같은 이유로 IndexedDB가 실패하면 예외를 던지지 않고
     `localStorage`로 내려앉습니다 — 좁은 저장소가 저장소 없음보다 낫습니다.
+40. **내보내는 파일 이름은 `documentBaseName` 한 곳에서 정합니다.** PNG·PDF·JSON이
+    각자 정하다가 셋이 갈라졌고, 그래서 인쇄소로 가는 PDF가 `user-mf3k2-1.pdf`
+    였습니다. 세 곳 중 하나에 다시 리터럴로 적지 마세요(11·14번과 같은 이유).
 
 ## 6. 다음 작업 (우선순위 순, 시작점 포함)
 
