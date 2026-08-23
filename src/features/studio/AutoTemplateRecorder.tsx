@@ -32,11 +32,19 @@ export const AutoTemplateRecorder = () => {
   const doc = useDocumentStore(state => state.doc);
   const adoptRecord = useDocumentStore(state => state.adoptRecord);
   const recordWorking = useUserTemplateStore(state => state.recordWorking);
+  const isReady = useUserTemplateStore(state => state.isReady);
   // The document as it was when it was first shown. Recording it immediately
   // would fill the list with untouched copies of every template browsed past.
   const baselineRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Storage answers asynchronously. Recording before the list has arrived
+    // would not find the entry this document belongs to and would fork a
+    // second copy of it — once per reload.
+    if (!isReady) {
+      return;
+    }
+
     const snapshot = JSON.stringify(doc);
 
     if (baselineRef.current === null) {
@@ -73,7 +81,7 @@ export const AutoTemplateRecorder = () => {
     }, QUIET_MS);
 
     return () => clearTimeout(timer);
-  }, [doc, recordWorking, adoptRecord, templateNames, t]);
+  }, [doc, isReady, recordWorking, adoptRecord, templateNames, t]);
 
   return null;
 };

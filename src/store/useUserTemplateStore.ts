@@ -7,14 +7,15 @@
  * business in the undo history — and undoing a label edit must never resurrect
  * a template the operator deliberately threw away.
  *
- * Like the open document, they live in `localStorage`. That store is small and
- * shared, so a save that would not fit is refused with a reason rather than
- * silently dropped by the browser.
+ * They live in IndexedDB (see `idbStorage`), which is what makes "your work
+ * saves itself" a promise this can keep — the ceiling below is the app's own,
+ * to stop one runaway document eating the disk, not the browser's.
  */
 import type { FlatDocument, LabelDocument } from '@/utils/documentModel';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { toPagedDocument } from '@/utils/documentModel';
+import { idbStorage } from './idbStorage';
 
 export type UserTemplate = {
   readonly id: string;
@@ -27,11 +28,15 @@ export type UserTemplate = {
 /**
  * Ceiling for everything saved here.
  *
- * `localStorage` gives a page around 5MB in total, and the open document needs
- * its share of that. An image element carries its file inline as a data URL, so
- * a handful of logo-bearing labels can reach this on their own.
+ * Not a storage limit any more — IndexedDB would take far more — but a limit on
+ * how much of somebody's disk a label editor may quietly claim. An image
+ * element carries its file inline as a data URL, so this is roughly twenty
+ * logo-bearing labels rather than the two the old 2MB pot held.
+ *
+ * Exported so a test can build a document that overruns it without hard-coding
+ * the number in two places.
  */
-const MAX_TOTAL_BYTES = 2_000_000;
+export const MAX_TOTAL_BYTES = 20_000_000;
 
 export type SaveFailure = 'empty_name' | 'too_large';
 
@@ -41,6 +46,17 @@ type SaveResult
 
 type UserTemplateStore = {
   readonly templates: readonly UserTemplate[];
+  /**
+   * False until storage has been read.
+   *
+   * IndexedDB answers asynchronously, so for the first moments of a visit this
+   * store honestly does not know what is saved. Anything that would act on an
+   * empty list — telling the operator they have nothing, or recording the open
+   * document as a new entry because the one it belongs to has not arrived
+   * yet — has to wait for this. The second of those forked a duplicate on
+   * every reload when it did not.
+   */
+  readonly isReady: boolean;
   /**
    * Why the last record was refused, or null.
    *
@@ -85,6 +101,7 @@ export const useUserTemplateStore = create<UserTemplateStore>()(
   persist(
     (set, get) => ({
       templates: [],
+      isReady: false,
       lastFailure: null,
 
       recordWorking: (doc, fallbackName) => {
@@ -131,6 +148,12 @@ export const useUserTemplateStore = create<UserTemplateStore>()(
     }),
     {
       name: 'smart-label-user-templates',
+      storage: createJSONStorage(() => idbStorage),
+      // Runs after hydration, including when it failed — an unreadable store
+      // still has to let the app start rather than wait for ever.
+      onRehydrateStorage: () => () => {
+        useUserTemplateStore.setState({ isReady: true });
+      },
       // A refusal belongs to the session that hit it, not to storage.
       partialize: state => ({ templates: state.templates }),
       merge: (persisted, current) => {

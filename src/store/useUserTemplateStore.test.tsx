@@ -1,6 +1,26 @@
 import type { LabelDocument } from '@/utils/documentModel';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { isUserTemplateId, useUserTemplateStore } from './useUserTemplateStore';
+import {
+  isUserTemplateId,
+  MAX_TOTAL_BYTES,
+  useUserTemplateStore,
+} from './useUserTemplateStore';
+
+/**
+ * A clean store, with storage settled.
+ *
+ * Hydration is asynchronous since the move to IndexedDB, so a test that only
+ * wrote its own state could have a read from the previous test land on top of
+ * it halfway through.
+ */
+async function reset() {
+  await useUserTemplateStore.persist.rehydrate();
+  useUserTemplateStore.setState({
+    templates: [],
+    isReady: true,
+    lastFailure: null,
+  });
+}
 
 const DOC: LabelDocument = {
   templateId: 'hang-tag-wide',
@@ -42,7 +62,7 @@ function hugeDocument(): LabelDocument {
             y: 0,
             width: 20,
             height: 20,
-            src: `data:image/png;base64,${'A'.repeat(2_100_000)}`,
+            src: `data:image/png;base64,${'A'.repeat(MAX_TOTAL_BYTES + 1_000)}`,
           },
         ],
       },
@@ -58,9 +78,7 @@ describe('isUserTemplateId', () => {
 });
 
 describe('recordWorking', () => {
-  beforeEach(() => {
-    useUserTemplateStore.setState({ templates: [] });
-  });
+  beforeEach(reset);
 
   it('forks a built-in template into an entry of its own', () => {
     const result = useUserTemplateStore.getState().recordWorking(DOC, '가로형');
@@ -169,9 +187,7 @@ describe('recordWorking', () => {
 });
 
 describe('removeTemplate', () => {
-  beforeEach(() => {
-    useUserTemplateStore.setState({ templates: [] });
-  });
+  beforeEach(reset);
 
   it('removes a template by id', () => {
     const store = useUserTemplateStore.getState();

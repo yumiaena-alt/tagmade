@@ -40,6 +40,7 @@ export const MyTemplates = () => {
   const templates = useUserTemplateStore(state => state.templates);
   const removeTemplate = useUserTemplateStore(state => state.removeTemplate);
   const lastFailure = useUserTemplateStore(state => state.lastFailure);
+  const isReady = useUserTemplateStore(state => state.isReady);
   const format = useFormatter();
 
   const handleDownload = (template: UserTemplate) => {
@@ -73,11 +74,20 @@ export const MyTemplates = () => {
           )
         : null}
 
+      {/*
+        Nothing at all until storage has answered. "You have nothing saved" is
+        a claim, and showing it for a moment to somebody who has twenty labels
+        saved reads as having lost them.
+      */}
       {templates.length === 0
         ? (
-            <p className="text-[11px] text-muted-foreground">
-              {t('my_templates_empty')}
-            </p>
+            isReady
+              ? (
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('my_templates_empty')}
+                  </p>
+                )
+              : null
           )
         : (
             <ul className="grid grid-cols-2 gap-2.5">

@@ -61,9 +61,16 @@ async function renderList() {
 }
 
 describe('MyTemplates', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.restoreAllMocks();
-    useUserTemplateStore.setState({ templates: [SAVED], lastFailure: null });
+    // Storage is read asynchronously; settle it before writing the fixture in,
+    // or the read lands on top of it mid-test.
+    await useUserTemplateStore.persist.rehydrate();
+    useUserTemplateStore.setState({
+      templates: [SAVED],
+      isReady: true,
+      lastFailure: null,
+    });
     useDocumentStore.getState().applyTemplate('care-label-standard');
   });
 
@@ -92,5 +99,19 @@ describe('MyTemplates', () => {
     await page.getByRole('button', { name: /2026 SS 행택/ }).first().click();
 
     expect(useDocumentStore.getState().doc.templateId).toBe('user-abc-1');
+  });
+
+  it('says nothing about an empty list until storage has answered', async () => {
+    useUserTemplateStore.setState({ templates: [], isReady: false });
+
+    await renderList();
+
+    expect(page.getByText('아직 없습니다.', { exact: false }).elements())
+      .toHaveLength(0);
+
+    useUserTemplateStore.setState({ isReady: true });
+
+    await expect.element(page.getByText('아직 없습니다.', { exact: false }))
+      .toBeVisible();
   });
 });
