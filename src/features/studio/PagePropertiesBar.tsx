@@ -10,6 +10,7 @@ import {
   toMm,
   useViewStore,
 } from '@/store/useViewStore';
+import { documentBaseName } from '@/utils/exportFileName';
 import { cn } from '@/utils/Helpers';
 import { BarGroup, BarLabel, ColorField, CONTROL_CLASS } from './barControls';
 import { DocumentIo } from './DocumentIo';
@@ -258,7 +259,7 @@ export const PagePropertiesBar = () => {
       >
         <DocumentIo />
         <DocumentPngButton />
-        <DocumentPdfButton doc={doc} documentName={doc.templateId} />
+        <DocumentPdfButton doc={doc} documentName={documentBaseName(doc)} />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { PX_PER_MM, useViewStore } from '@/store/useViewStore';
-import { exportFileName } from '@/utils/exportFileName';
+import { documentBaseName, exportFileName } from '@/utils/exportFileName';
 import { exportStagePng, nextCanvasPaint } from './canvasStage';
 
 /**
@@ -44,7 +44,7 @@ export const DocumentPngButton = () => {
   };
 
   const handleDownload = async () => {
-    const base = doc.name?.trim() || doc.templateId;
+    const base = documentBaseName(doc);
     const startedOn = activePageIndex;
     const hadSelected = selectedIds;
 

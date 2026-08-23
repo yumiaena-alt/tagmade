@@ -18,6 +18,22 @@ function safe(name: string): string {
   return name.replace(/[^\p{L}\p{N}._-]+/gu, '-').replace(/^-+|-+$/g, '');
 }
 
+/**
+ * What a document's files are called before the extension and page number.
+ *
+ * One rule in one place, because the three export paths had drifted: PNG used
+ * the operator's name, PDF used the internal template id — so the file going to
+ * a printer was called `user-mf3k2-1.pdf` — and JSON used the id as well. The
+ * name is also the PDF's title metadata, so this returns it unsanitized and
+ * leaves `exportFileName` to make it safe for a filesystem.
+ */
+export function documentBaseName(doc: {
+  readonly name?: string;
+  readonly templateId: string;
+}): string {
+  return doc.name?.trim() || doc.templateId;
+}
+
 export type ExportPage = {
   /** 1-based, because it ends up in a filename a person reads. */
   readonly number: number;

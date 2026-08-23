@@ -18,7 +18,7 @@ import type {
   LabelPage,
 } from './documentModel';
 import { toPagedDocument } from './documentModel';
-import { exportFileName } from './exportFileName';
+import { documentBaseName, exportFileName } from './exportFileName';
 
 /**
  * Bumped only if the shape changes in a way older files cannot satisfy.
@@ -207,5 +207,5 @@ export function parseDocument(text: string): ParseResult {
  * `user-mf3k2-1.json`, which is what it used to do.
  */
 export function documentFileName(doc: LabelDocument): string {
-  return exportFileName(doc.name?.trim() || doc.templateId, 'json');
+  return exportFileName(documentBaseName(doc), 'json');
 }

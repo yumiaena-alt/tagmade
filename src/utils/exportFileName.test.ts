@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exportFileName } from './exportFileName';
+import { documentBaseName, exportFileName } from './exportFileName';
 
 describe('exportFileName', () => {
   it('names a single-page export without a page number', () => {
@@ -35,5 +35,19 @@ describe('exportFileName', () => {
   it('falls back when the base has nothing usable left', () => {
     expect(exportFileName('///', 'png')).toBe('label.png');
     expect(exportFileName('', 'pdf')).toBe('label.pdf');
+  });
+});
+
+describe('documentBaseName', () => {
+  it('uses the name the operator gave the document', () => {
+    expect(documentBaseName({ name: '2026 SS 행택', templateId: 'user-1' }))
+      .toBe('2026 SS 행택');
+  });
+
+  it('falls back to the template id when there is no name', () => {
+    expect(documentBaseName({ templateId: 'hang-tag-wide' }))
+      .toBe('hang-tag-wide');
+    expect(documentBaseName({ name: '  ', templateId: 'hang-tag-wide' }))
+      .toBe('hang-tag-wide');
   });
 });
